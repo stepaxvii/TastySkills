@@ -1,0 +1,60 @@
+{% extends "base.html" %}
+
+{% block title %}Создать ресторан{% endblock %}
+
+{% block content %}
+<div class="container mt-4">
+    <nav aria-label="breadcrumb">
+        <ol class="breadcrumb">
+            <li class="breadcrumb-item"><a href="/">Главная</a></li>
+            {% if user and user.role == 'admin' %}
+            <li class="breadcrumb-item"><a href="/restaurants">Рестораны</a></li>
+            {% endif %}
+            <li class="breadcrumb-item active" aria-current="page"><span>➕ Создать ресторан</span></li>
+        </ol>
+    </nav>
+
+    <div class="row justify-content-center">
+        <div class="col-md-8">
+            <div class="card">
+                <div class="card-header">
+                    <h3 class="mb-0">Создать новый ресторан</h3>
+                </div>
+                <div class="card-body">
+                    <form method="post">
+                        <div class="mb-3">
+                            <label for="name" class="form-label">Название ресторана *</label>
+                            <input type="text" class="form-control" id="name" name="name" required>
+                        </div>
+                        
+                        <div class="mb-3">
+                            <label for="concept" class="form-label">Концепция ресторана</label>
+                            <textarea class="form-control" id="concept" name="concept" rows="3" 
+                                      placeholder="Опишите концепцию, стиль кухни, атмосферу ресторана..."></textarea>
+                        </div>
+                        
+                        <div class="d-flex gap-2">
+                            <button type="submit" class="btn btn-success">
+                                🏪 Создать ресторан
+                            </button>
+                            {% if user and user.role == 'admin' %}
+                <a href="/restaurants" class="btn btn-outline-secondary">Отмена</a>
+                {% else %}
+                <a href="/" class="btn btn-outline-secondary">Отмена</a>
+                {% endif %}
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <div class="back-button-container">
+        {% if user and user.role == 'admin' %}
+            <a href="/restaurants" class="btn-back">← Назад к ресторанам</a>
+        {% else %}
+            <a href="/" class="btn-back">← Назад на главную</a>
+        {% endif %}
+    </div>
+</div>
+{% endblock %} 

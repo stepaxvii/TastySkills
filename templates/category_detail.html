@@ -1,0 +1,100 @@
+{% extends "base.html" %}
+
+{% block title %}{{ category.title }} - {{ category.section.name }}{% if is_demo %} - Демо{% endif %}{% endblock %}
+
+{% block breadcrumb_items %}
+    {% if is_demo %}
+    <li class="breadcrumb-item"><a href="/demo">Демо-ресторан</a></li>
+    <li class="breadcrumb-item"><a href="/sections/{{ category.section.id }}">{{ category.section.name }}</a></li>
+    <li class="breadcrumb-item active" aria-current="page"><span>{{ category.title }}</span></li>
+    {% else %}
+    {% if user and user.role == 'admin' %}
+    <li class="breadcrumb-item"><a href="/restaurants">Рестораны</a></li>
+    {% endif %}
+    <li class="breadcrumb-item"><a href="/restaurants/{{ category.restaurant.id }}">{{ category.restaurant.name }}</a></li>
+    <li class="breadcrumb-item"><a href="/sections/{{ category.section.id }}">{{ category.section.name }}</a></li>
+    <li class="breadcrumb-item active" aria-current="page"><span>{{ category.title }}</span></li>
+    {% endif %}
+{% endblock %}
+
+{% block content %}
+    <div class="page-header-unified">
+        <h1>{{ category.title }}</h1>
+        {% if user and user.role in ['admin', 'manager'] %}
+        <div class="management-buttons">
+            <a href="/manage/products/create/{{ category.id }}" class="btn btn-success btn-lg">
+                ➕ Создать блюдо
+            </a>
+        </div>
+        {% endif %}
+    </div>
+
+    {% if products %}
+    <div class="products-grid">
+        {% for product in products %}
+        <div class="product-card">
+            <div class="product-content" onclick="window.location.href='/products/{{ product.id }}'">
+                <!-- Фото продукта -->
+                <div class="product-image">
+                    📸
+                </div>
+                <!-- Название продукта -->
+                <h5 class="product-title">
+                    {{ product.title }}
+                </h5>
+            </div>
+            {% if user and user.role in ['admin', 'manager'] %}
+            <div class="product-actions">
+                <a href="/manage/products/edit/{{ product.id }}" class="btn btn-outline-warning btn-sm">✏️</a>
+                <button type="button" class="btn btn-outline-danger btn-sm" 
+                        data-delete-url="/manage/products/delete/{{ product.id }}"
+                        data-delete-message="Удалить блюдо «{{ product.title }}»? Это действие нельзя отменить.">
+                    🗑️
+                </button>
+            </div>
+            {% endif %}
+        </div>
+        {% endfor %}
+    </div>
+    {% else %}
+    <div class="empty-state">
+        <div class="text-center py-5">
+            <h3 class="text-muted mb-3">Здесь пока пусто</h3>
+            <p class="text-muted mb-4">В этой категории пока нет блюд.</p>
+            {% if user and user.role in ['admin', 'manager'] %}
+            <a href="/manage/products/create/{{ category.id }}" class="btn btn-success btn-lg">
+                ➕ Создать первое блюдо
+            </a>
+            {% endif %}
+        </div>
+    </div>
+    {% endif %}
+    
+    <div class="back-button-container">
+        <a href="/sections/{{ category.section.id }}" class="btn-back">← Назад к разделу</a>
+    </div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+// Анимация появления карточек
+const cards = document.querySelectorAll('.card');
+cards.forEach((card, i) => {
+    card.style.opacity = 0;
+    setTimeout(() => {
+        card.style.transition = 'opacity 0.5s';
+        card.style.opacity = 1;
+    }, 100 + i * 150);
+});
+
+// Предотвращение всплытия событий от кнопок управления
+const actionButtons = document.querySelectorAll('.product-actions .btn');
+actionButtons.forEach(button => {
+    button.addEventListener('click', function(e) {
+        e.stopPropagation();
+    });
+});
+</script>
+{% endblock %}
+
+{% include 'components/delete_modal.html' %} 

@@ -1,0 +1,113 @@
+{% extends "base.html" %}
+
+{% block title %}Создать блюдо - {{ category.title }}{% endblock %}
+
+{% block content %}
+<div class="container mt-4">
+    <nav aria-label="breadcrumb">
+        <ol class="breadcrumb">
+            <li class="breadcrumb-item"><a href="/">Главная</a></li>
+            {% if user and user.role == 'admin' %}
+            <li class="breadcrumb-item"><a href="/restaurants">Рестораны</a></li>
+            {% endif %}
+            <li class="breadcrumb-item"><a href="/restaurants/{{ category.restaurant.id }}">{{ category.restaurant.name }}</a></li>
+            <li class="breadcrumb-item"><a href="/sections/{{ category.section.id }}">{{ category.section.name }}</a></li>
+            <li class="breadcrumb-item"><a href="/categories/{{ category.id }}">{{ category.title }}</a></li>
+            <li class="breadcrumb-item active" aria-current="page"><span>➕ Создать блюдо</span></li>
+        </ol>
+    </nav>
+
+    <div class="row justify-content-center">
+        <div class="col-md-10">
+            <div class="card">
+                <div class="card-header">
+                    <h3>Создать новое блюдо</h3>
+                    <p class="text-muted mb-0">Категория: {{ category.title }} | Раздел: {{ category.section.name }} | Ресторан: {{ category.restaurant.name }}</p>
+                </div>
+                {% if success %}
+                <div class="alert alert-success">
+                    <strong>✅ Блюдо успешно создано!</strong><br>
+                    <small>Блюдо добавлено в категорию "{{ category.title }}". Вы можете создать ещё одно блюдо или перейти к другой категории.</small>
+                    <div class="mt-2">
+                        <a href="/categories/{{ category.id }}" class="btn btn-outline-success btn-sm">👁️ Посмотреть категорию</a>
+                        <a href="/sections/{{ category.section.id }}" class="btn btn-outline-primary btn-sm">📋 К другим категориям</a>
+                    </div>
+                </div>
+                {% else %}
+                <div class="alert alert-info">
+                    <strong>Добавьте блюдо в категорию "{{ category.title }}"</strong><br>
+                    <small>После создания блюда вы сможете добавить ещё блюда в эту категорию или перейти к другой категории.</small>
+                </div>
+                {% endif %}
+                <div class="card-body">
+                    <form method="post">
+                        <div class="row">
+                            <div class="col-md-6">
+                                <div class="mb-3">
+                                    <label for="title" class="form-label">Название блюда *</label>
+                                    <input type="text" class="form-control" id="title" name="title" required 
+                                           placeholder="Название блюда">
+                                </div>
+                                
+                                <div class="mb-3">
+                                    <label for="weight" class="form-label">Вес/Объем</label>
+                                    <input type="text" class="form-control" id="weight" name="weight" 
+                                           placeholder="Например: 300г, 250мл">
+                                </div>
+                                
+                                <div class="mb-3">
+                                    <label for="ingredients" class="form-label">Ингредиенты *</label>
+                                    <textarea class="form-control" id="ingredients" name="ingredients" rows="4" required
+                                              placeholder="Список ингредиентов"></textarea>
+                                </div>
+                                
+                                <div class="mb-3">
+                                    <label for="allergens" class="form-label">Аллергены</label>
+                                    <input type="text" class="form-control" id="allergens" name="allergens" 
+                                           placeholder="Например: Глютен, Молоко, Орехи">
+                                </div>
+                            </div>
+                            
+                            <div class="col-md-6">
+                                <div class="mb-3">
+                                    <label for="description" class="form-label">Описание</label>
+                                    <textarea class="form-control" id="description" name="description" rows="3"
+                                              placeholder="Краткое описание блюда"></textarea>
+                                </div>
+                                
+                                <div class="mb-3">
+                                    <label for="features" class="form-label">Особенности блюда</label>
+                                    <textarea class="form-control" id="features" name="features" rows="3"
+                                              placeholder="Интересные факты, особенности приготовления, что должен знать официант"></textarea>
+                                </div>
+                                
+                                <div class="mb-3">
+                                    <label for="table_setting" class="form-label">Подача</label>
+                                    <textarea class="form-control" id="table_setting" name="table_setting" rows="2"
+                                              placeholder="Как подается блюдо"></textarea>
+                                </div>
+                                
+                                <div class="mb-3">
+                                    <label for="gastronomic_pairings" class="form-label">Гастрономические сочетания</label>
+                                    <textarea class="form-control" id="gastronomic_pairings" name="gastronomic_pairings" rows="2"
+                                              placeholder="С чем сочетается блюдо"></textarea>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="d-flex gap-2">
+                            <button type="submit" class="btn btn-primary">Создать блюдо</button>
+                            <a href="/categories/{{ category.id }}" class="btn btn-secondary">Отмена</a>
+                            <a href="/sections/{{ category.section.id }}" class="btn btn-outline-secondary">К категориям</a>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <div class="back-button-container">
+        <a href="/categories/{{ category.id }}" class="btn-back">← Назад к категории</a>
+    </div>
+</div>
+{% endblock %} 

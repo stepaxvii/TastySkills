@@ -1,0 +1,90 @@
+{% extends "base.html" %}
+
+{% block title %}{{ section.name }} - {{ section.restaurant.name }}{% if is_demo %} - Демо{% endif %}{% endblock %}
+
+{% block breadcrumb_items %}
+    {% if is_demo %}
+    <li class="breadcrumb-item"><a href="/demo">Демо-ресторан</a></li>
+    <li class="breadcrumb-item active" aria-current="page"><span>{{ section.name }}</span></li>
+    {% else %}
+    {% if user and user.role == 'admin' %}
+    <li class="breadcrumb-item"><a href="/restaurants">Рестораны</a></li>
+    {% endif %}
+    <li class="breadcrumb-item"><a href="/restaurants/{{ section.restaurant.id }}">{{ section.restaurant.name }}</a></li>
+    <li class="breadcrumb-item active" aria-current="page"><span>{{ section.name }}</span></li>
+    {% endif %}
+{% endblock %}
+
+{% block content %}
+    <div class="page-header-unified">
+        <h1>{{ section.name }}</h1>
+        {% if user and user.role in ['admin', 'manager'] %}
+        <div class="management-buttons">
+            <a href="/manage/categories/create/{{ section.id }}" class="btn btn-success btn-lg">
+                ➕ Создать категорию
+            </a>
+        </div>
+        {% endif %}
+    </div>
+
+    {% if categories %}
+    <div class="categories-list">
+        {% for category in categories %}
+        <div class="category-card">
+            <div class="category-content" onclick="window.location.href='/categories/{{ category.id }}'">
+                <h5 class="category-title">
+                    {{ category.title }}
+                </h5>
+                {% if category.description %}
+                <p class="category-description">{{ category.description }}</p>
+                {% endif %}
+            </div>
+            {% if user and user.role in ['admin', 'manager'] %}
+            <div class="category-actions">
+                <a href="/manage/categories/edit/{{ category.id }}" class="btn btn-outline-warning btn-sm">✏️</a>
+                <button type="button" class="btn btn-outline-danger btn-sm" 
+                        data-delete-url="/manage/categories/delete/{{ category.id }}"
+                        data-delete-message="Удалить категорию «{{ category.title }}»? Все блюда в этой категории также будут удалены.">
+                    🗑️
+                </button>
+            </div>
+            {% endif %}
+        </div>
+        {% endfor %}
+    </div>
+    {% else %}
+    <div class="empty-state">
+        <div class="text-center py-5">
+            <h3 class="text-muted mb-3">Здесь пока пусто</h3>
+            <p class="text-muted mb-4">В этом разделе пока нет категорий блюд.</p>
+            {% if user and user.role in ['admin', 'manager'] %}
+            <a href="/manage/categories/create/{{ section.id }}" class="btn btn-success btn-lg">
+                ➕ Создать первую категорию
+            </a>
+            {% endif %}
+        </div>
+    </div>
+    {% endif %}
+
+    <div class="back-button-container">
+        {% if is_demo %}
+        <a href="/demo" class="btn-back">← Назад к демо-ресторану</a>
+        {% else %}
+        <a href="/restaurants/{{ section.restaurant.id }}" class="btn-back">← Назад к ресторану</a>
+        {% endif %}
+    </div>
+
+<script>
+// Предотвращение всплытия событий от кнопок управления
+document.addEventListener('DOMContentLoaded', function() {
+    const actionButtons = document.querySelectorAll('.category-actions .btn');
+    actionButtons.forEach(button => {
+        button.addEventListener('click', function(e) {
+            e.stopPropagation();
+        });
+    });
+});
+</script>
+{% endblock %}
+
+{% include 'components/delete_modal.html' %} 

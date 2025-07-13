@@ -1,0 +1,109 @@
+{% extends "base.html" %}
+
+{% block title %}{{ restaurant.name }}{% if is_demo %} - Демо{% endif %}{% endblock %}
+
+{% block breadcrumb_items %}
+    {% if is_demo %}
+    <li class="breadcrumb-item active" aria-current="page"><span>{{ restaurant.name }} (Демо)</span></li>
+    {% else %}
+    {% if user and user.role == 'admin' %}
+    <li class="breadcrumb-item"><a href="/restaurants">Рестораны</a></li>
+    {% endif %}
+    <li class="breadcrumb-item active" aria-current="page"><span>{{ restaurant.name }}</span></li>
+    {% endif %}
+{% endblock %}
+
+{% block content %}
+    {% if is_demo %}
+    <div class="alert alert-info">
+        <strong>Демо-версия TastySkills</strong> - это пример того, как выглядит система управления меню для официантов.
+        <br><small>Для создания собственного ресторана <a href="/login">войдите в систему</a>.</small>
+    </div>
+    {% endif %}
+
+    <div class="page-header-unified">
+        <h1>{{ restaurant.name }}</h1>
+        {% if user and user.role in ['admin', 'manager'] %}
+        <div class="management-buttons">
+            <a href="/manage/sections/create/{{ restaurant.id }}" class="btn btn-success btn-lg">
+                ➕ Создать раздел
+            </a>
+        </div>
+        {% endif %}
+    </div>
+
+    {% if sections %}
+    <div class="categories-list">
+        {% for section in sections %}
+        <div class="section-card">
+            <div class="section-content" onclick="window.location.href='/sections/{{ section.id }}'">
+                <h5 class="card-title">
+                    {{ section.name }}
+                </h5>
+                {% if section.description %}
+                <p class="card-text">{{ section.description }}</p>
+                {% endif %}
+            </div>
+            {% if user and user.role in ['admin', 'manager'] %}
+            <div class="section-actions">
+                <a href="/manage/sections/edit/{{ section.id }}" class="btn btn-outline-warning btn-sm">✏️</a>
+                <button type="button" class="btn btn-outline-danger btn-sm" 
+                        data-delete-url="/manage/sections/delete/{{ section.id }}"
+                        data-delete-message="Удалить раздел «{{ section.name }}»? Все категории и блюда в этом разделе также будут удалены.">
+                    🗑️
+                </button>
+            </div>
+            {% endif %}
+        </div>
+        {% endfor %}
+    </div>
+    {% else %}
+    <div class="empty-state">
+        <div class="text-center py-5">
+            <h3 class="text-muted mb-3">Здесь пока пусто</h3>
+            <p class="text-muted mb-4">В этом ресторане пока нет разделов меню.</p>
+            {% if user and user.role in ['admin', 'manager'] %}
+            <a href="/manage/sections/create/{{ restaurant.id }}" class="btn btn-success btn-lg">
+                ➕ Создать первый раздел
+            </a>
+            {% endif %}
+        </div>
+    </div>
+    {% endif %}
+
+    <div class="back-button-container">
+        {% if user and user.role == 'admin' %}
+            <a href="/restaurants" class="btn-back">← Назад к ресторанам</a>
+        {% else %}
+            <a href="/" class="btn-back">← Назад на главную</a>
+        {% endif %}
+    </div>
+
+<script>
+// Предотвращение всплытия событий от кнопок управления
+document.addEventListener('DOMContentLoaded', function() {
+    const actionButtons = document.querySelectorAll('.section-actions .btn, .section-actions form');
+    actionButtons.forEach(button => {
+        button.addEventListener('click', function(e) {
+            e.stopPropagation();
+        });
+    });
+});
+</script>
+{% endblock %}
+
+{% block scripts %}
+<script>
+// Анимация появления карточек
+const cards = document.querySelectorAll('.card');
+cards.forEach((card, i) => {
+    card.style.opacity = 0;
+    setTimeout(() => {
+        card.style.transition = 'opacity 0.5s';
+        card.style.opacity = 1;
+    }, 100 + i * 150);
+});
+</script>
+{% endblock %}
+
+{% include 'components/delete_modal.html' %} 

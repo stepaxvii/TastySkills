@@ -1,0 +1,55 @@
+{% extends "base.html" %}
+
+{% block title %}Создать раздел - {{ restaurant.name }}{% endblock %}
+
+{% block content %}
+<div class="container mt-4">
+    <nav aria-label="breadcrumb">
+        <ol class="breadcrumb">
+            <li class="breadcrumb-item"><a href="/">Главная</a></li>
+            {% if user and user.role == 'admin' %}
+            <li class="breadcrumb-item"><a href="/restaurants">Рестораны</a></li>
+            {% endif %}
+            <li class="breadcrumb-item"><a href="/restaurants/{{ restaurant.id }}">{{ restaurant.name }}</a></li>
+            <li class="breadcrumb-item active" aria-current="page"><span>➕ Создать раздел</span></li>
+        </ol>
+    </nav>
+
+    <div class="row justify-content-center">
+        <div class="col-md-8">
+            <div class="card">
+                <div class="card-header">
+                    <h3>Создать новый раздел</h3>
+                    <p class="text-muted mb-0">Ресторан: {{ restaurant.name }}</p>
+                </div>
+                <div class="card-body">
+                    <form method="post">
+                        <div class="mb-3">
+                            <label for="name" class="form-label">Название раздела *</label>
+                            <input type="text" class="form-control" id="name" name="name" required 
+                                   placeholder="Например: Кухня, Бар">
+                            <div class="form-text">Краткое название раздела меню</div>
+                        </div>
+                        
+                        <div class="mb-3">
+                            <label for="description" class="form-label">Описание</label>
+                            <textarea class="form-control" id="description" name="description" rows="3"
+                                      placeholder="Описание раздела (необязательно)"></textarea>
+                            <div class="form-text">Подробное описание раздела</div>
+                        </div>
+                        
+                        <div class="d-flex gap-2">
+                            <button type="submit" class="btn btn-primary">Создать раздел</button>
+                            <a href="/restaurants/{{ restaurant.id }}" class="btn btn-secondary">Отмена</a>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <div class="back-button-container">
+        <a href="/restaurants/{{ restaurant.id }}" class="btn-back">← Назад к ресторану</a>
+    </div>
+</div>
+{% endblock %} 

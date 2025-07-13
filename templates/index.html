@@ -1,0 +1,104 @@
+{% extends "base.html" %}
+
+{% block title %}Главная страница - TastySkills{% endblock %}
+
+{% block content %}
+<!-- Героический баннер -->
+<div class="hero-section text-center mb-5">
+    <h1 class="display-4 mb-3">Добро пожаловать в <span class="text-primary">TastySkills</span></h1>
+    <p class="lead mb-4">Современная система управления меню ресторанов и кафе</p>
+</div>
+
+
+
+<!-- Преимущества системы -->
+<div class="features-section mb-5">
+    <div class="row g-4">
+        <div class="col-md-4">
+            <div class="feature-card">
+                <div class="feature-icon">📱</div>
+                <h5>Адаптивный дизайн</h5>
+                <p>Работает на любых устройствах - от смартфонов до планшетов</p>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div class="feature-card">
+                <div class="feature-icon">🤖</div>
+                <h5>Telegram бот</h5>
+                <p>Управление через удобный Telegram бот с быстрой регистрацией</p>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div class="feature-card">
+                <div class="feature-icon">⚡</div>
+                <h5>Быстрый доступ</h5>
+                <p>Мгновенный поиск и навигация по меню с детальной информацией</p>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Основные действия -->
+<div class="action-buttons-section text-center mb-5">
+    <h2 class="section-title mb-4">🚀 Начать работу</h2>
+    <div class="action-buttons">
+        {% if user %}
+            {% if user.role == 'admin' %}
+                <a href="/restaurants" class="btn btn-primary btn-lg me-3">🏪 Управление ресторанами</a>
+            {% endif %}
+            <a href="/recent-changes" class="btn btn-outline-primary btn-lg me-3">📊 Последние изменения</a>
+            {% if user.role in ['admin', 'manager'] %}
+                <a href="/manage/restaurants/create" class="btn btn-success btn-lg">➕ Создать ресторан</a>
+            {% endif %}
+        {% else %}
+            <a href="/demo" class="btn btn-primary btn-lg me-3">🍽️ Демо-ресторан</a>
+            <a href="/login" class="btn btn-outline-primary btn-lg me-3">🔐 Войти в систему</a>
+            <a href="/about" class="btn btn-outline-success btn-lg">📖 О проекте</a>
+        {% endif %}
+    </div>
+</div>
+
+<!-- Призыв к действию -->
+<div class="cta-section text-center">
+    <div class="cta-card">
+        <h3>🚀 Готовы начать?</h3>
+        <p class="mb-4">Присоединяйтесь к TastySkills и упростите управление меню вашего ресторана</p>
+        {% if user %}
+            <a href="/about" class="btn btn-outline-primary btn-lg">📖 Узнать больше</a>
+        {% else %}
+            <a href="/login" class="btn btn-success btn-lg">🔐 Зарегистрироваться</a>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+// Анимация появления элементов
+document.addEventListener('DOMContentLoaded', function() {
+    // Анимация карточек преимуществ
+    const featureCards = document.querySelectorAll('.feature-card');
+    featureCards.forEach((card, i) => {
+        card.style.opacity = 0;
+        card.style.transform = 'translateY(30px)';
+        setTimeout(() => {
+            card.style.transition = 'opacity 0.6s ease, transform 0.6s ease';
+            card.style.opacity = 1;
+            card.style.transform = 'translateY(0)';
+        }, 300 + i * 150);
+    });
+    
+    // Анимация CTA секции
+    const ctaCard = document.querySelector('.cta-card');
+    if (ctaCard) {
+        ctaCard.style.opacity = 0;
+        ctaCard.style.transform = 'scale(0.9)';
+        setTimeout(() => {
+            ctaCard.style.transition = 'opacity 0.8s ease, transform 0.8s ease';
+            ctaCard.style.opacity = 1;
+            ctaCard.style.transform = 'scale(1)';
+        }, 1200);
+    }
+});
+</script>
+{% endblock %} 

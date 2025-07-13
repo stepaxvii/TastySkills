@@ -1,0 +1,98 @@
+{% extends "base.html" %}
+
+{% block title %}Редактировать блюдо - {{ product.title }}{% endblock %}
+
+{% block content %}
+<div class="container mt-4">
+    <nav aria-label="breadcrumb">
+        <ol class="breadcrumb">
+            <li class="breadcrumb-item"><a href="/">Главная</a></li>
+            {% if user and user.role == 'admin' %}
+            <li class="breadcrumb-item"><a href="/restaurants">Рестораны</a></li>
+            {% endif %}
+            <li class="breadcrumb-item"><a href="/restaurants/{{ product.restaurant.id }}">{{ product.restaurant.name }}</a></li>
+            <li class="breadcrumb-item"><a href="/sections/{{ product.category.section.id }}">{{ product.category.section.name }}</a></li>
+            <li class="breadcrumb-item"><a href="/categories/{{ product.category.id }}">{{ product.category.title }}</a></li>
+            <li class="breadcrumb-item"><a href="/products/{{ product.id }}">{{ product.title }}</a></li>
+            <li class="breadcrumb-item active" aria-current="page"><span>✏️ Редактировать</span></li>
+        </ol>
+    </nav>
+
+    <div class="row justify-content-center">
+        <div class="col-md-10">
+            <div class="card">
+                <div class="card-header">
+                    <h3>Редактировать блюдо</h3>
+                    <p class="text-muted mb-0">Категория: {{ product.category.title }} | Раздел: {{ product.category.section.name }} | Ресторан: {{ product.restaurant.name }}</p>
+                </div>
+                <div class="card-body">
+                    <form method="post">
+                        <div class="row">
+                            <div class="col-md-6">
+                                <div class="mb-3">
+                                    <label for="title" class="form-label">Название блюда *</label>
+                                    <input type="text" class="form-control" id="title" name="title" required 
+                                           value="{{ product.title }}" placeholder="Название блюда">
+                                </div>
+                                
+                                <div class="mb-3">
+                                    <label for="weight" class="form-label">Вес/Объем</label>
+                                    <input type="text" class="form-control" id="weight" name="weight" 
+                                           value="{{ product.weight or '' }}" placeholder="Например: 300г, 250мл">
+                                </div>
+                                
+                                <div class="mb-3">
+                                    <label for="ingredients" class="form-label">Ингредиенты *</label>
+                                    <textarea class="form-control" id="ingredients" name="ingredients" rows="4" required
+                                              placeholder="Список ингредиентов">{{ product.ingredients }}</textarea>
+                                </div>
+                                
+                                <div class="mb-3">
+                                    <label for="allergens" class="form-label">Аллергены</label>
+                                    <input type="text" class="form-control" id="allergens" name="allergens" 
+                                           value="{{ product.allergens or '' }}" placeholder="Например: Глютен, Молоко, Орехи">
+                                </div>
+                            </div>
+                            
+                            <div class="col-md-6">
+                                <div class="mb-3">
+                                    <label for="description" class="form-label">Процесс приготовления</label>
+                                    <textarea class="form-control" id="description" name="description" rows="3"
+                                              placeholder="Краткое описание блюда">{{ product.description or '' }}</textarea>
+                                </div>
+                                
+                                <div class="mb-3">
+                                    <label for="features" class="form-label">Особенности блюда</label>
+                                    <textarea class="form-control" id="features" name="features" rows="3"
+                                              placeholder="Интересные факты, особенности приготовления, что должен знать официант">{{ product.features or '' }}</textarea>
+                                </div>
+                                
+                                <div class="mb-3">
+                                    <label for="table_setting" class="form-label">Подача</label>
+                                    <textarea class="form-control" id="table_setting" name="table_setting" rows="2"
+                                              placeholder="Как подается блюдо">{{ product.table_setting or '' }}</textarea>
+                                </div>
+                                
+                                <div class="mb-3">
+                                    <label for="gastronomic_pairings" class="form-label">Гастрономические сочетания</label>
+                                    <textarea class="form-control" id="gastronomic_pairings" name="gastronomic_pairings" rows="2"
+                                              placeholder="С чем сочетается блюдо">{{ product.gastronomic_pairings or '' }}</textarea>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="d-flex gap-2">
+                            <button type="submit" class="btn btn-primary">Сохранить изменения</button>
+                            <a href="/products/{{ product.id }}" class="btn btn-secondary">Отмена</a>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <div class="back-button-container">
+        <a href="/products/{{ product.id }}" class="btn-back">← Назад к блюду</a>
+    </div>
+</div>
+{% endblock %} 

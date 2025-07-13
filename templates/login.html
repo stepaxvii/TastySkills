@@ -1,0 +1,97 @@
+{% extends "base.html" %}
+
+{% block title %}Вход в систему - TastySkills{% endblock %}
+
+{% block head %}
+<style>
+    /* Специальные стили для страницы логина */
+    body {
+        display: flex;
+        flex-direction: column;
+        min-height: 100vh;
+    }
+    
+    .main-layout {
+        flex: 1;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        padding: 2rem 1.5rem;
+    }
+    
+    .main-content {
+        width: 100%;
+        max-width: 400px;
+        margin: 0 auto;
+        background: transparent;
+        backdrop-filter: none;
+        box-shadow: none;
+        padding: 0;
+    }
+    
+    .login-form-container {
+        background: rgba(255, 255, 255, 0.95);
+        backdrop-filter: blur(10px);
+        border-radius: 16px;
+        padding: 2.5rem;
+        box-shadow: 0 8px 32px rgba(0,0,0,0.1);
+        border: 1px solid rgba(255, 255, 255, 0.2);
+        width: 100%;
+        max-width: 350px;
+        margin: 0 auto;
+    }
+    
+    .footer {
+        margin-top: auto;
+        flex-shrink: 0;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="content-wrapper fade-in text-center login-form-container">
+    <h2 class="mb-4 text-center" style="font-size: 1.75rem; color: #2c3e50; font-weight: 600;">Вход в систему</h2>
+    <form method="post" class="needs-validation" novalidate autocomplete="on">
+        <div class="mb-3">
+            <label for="username" class="form-label" style="font-size: 0.95rem; margin-bottom: 0.5rem; color: #495057; font-weight: 500;">Логин</label>
+            <input type="text" class="form-control" id="username" name="username" required autofocus style="border-radius: 8px; border: 1px solid #dee2e6; padding: 0.75rem;">
+            <div class="invalid-feedback">Введите логин пользователя</div>
+        </div>
+        <div class="mb-4">
+            <label for="password" class="form-label" style="font-size: 0.95rem; margin-bottom: 0.5rem; color: #495057; font-weight: 500;">Пароль</label>
+            <input type="password" class="form-control" id="password" name="password" required style="border-radius: 8px; border: 1px solid #dee2e6; padding: 0.75rem;">
+            <div class="invalid-feedback">Введите пароль</div>
+        </div>
+        {% if error %}
+        <div class="alert alert-danger text-center py-3" style="font-size: 0.9rem; margin-bottom: 1.5rem; border-radius: 8px; border: none;">{{ error }}</div>
+        {% endif %}
+        <div class="d-grid gap-3">
+            <button type="submit" class="btn btn-primary" style="padding: 0.75rem; border-radius: 8px; font-weight: 500; font-size: 1rem;">Войти</button>
+        </div>
+    </form>
+    <div class="mt-4 text-center">
+        <a href="/" class="btn btn-link" style="font-size: 0.9rem; color: #3498db; text-decoration: none;">
+            <i class="fas fa-arrow-left me-1"></i>На главную
+        </a>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+// Bootstrap валидация форм
+(() => {
+  'use strict';
+  const forms = document.querySelectorAll('.needs-validation');
+  Array.from(forms).forEach(form => {
+    form.addEventListener('submit', event => {
+      if (!form.checkValidity()) {
+        event.preventDefault();
+        event.stopPropagation();
+      }
+      form.classList.add('was-validated');
+    }, false);
+  });
+})();
+</script>
+{% endblock %} 

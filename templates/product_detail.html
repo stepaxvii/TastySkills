@@ -1,0 +1,121 @@
+{% extends "base.html" %}
+
+{% block title %}{{ product.title }} - {{ product.category.title }}{% if is_demo %} - Демо{% endif %}{% endblock %}
+
+{% block breadcrumb_items %}
+    {% if is_demo %}
+    <li class="breadcrumb-item"><a href="/demo">Демо-ресторан</a></li>
+    <li class="breadcrumb-item"><a href="/sections/{{ product.category.section.id }}">{{ product.category.section.name }}</a></li>
+    <li class="breadcrumb-item"><a href="/categories/{{ product.category.id }}">{{ product.category.title }}</a></li>
+    <li class="breadcrumb-item active" aria-current="page"><span>{{ product.title }}</span></li>
+    {% else %}
+    {% if user and user.role == 'admin' %}
+    <li class="breadcrumb-item"><a href="/restaurants">Рестораны</a></li>
+    {% endif %}
+    <li class="breadcrumb-item"><a href="/restaurants/{{ product.restaurant.id }}">{{ product.restaurant.name }}</a></li>
+    <li class="breadcrumb-item"><a href="/sections/{{ product.category.section.id }}">{{ product.category.section.name }}</a></li>
+    <li class="breadcrumb-item"><a href="/categories/{{ product.category.id }}">{{ product.category.title }}</a></li>
+    <li class="breadcrumb-item active" aria-current="page"><span>{{ product.title }}</span></li>
+    {% endif %}
+{% endblock %}
+
+{% block content %}
+<div class="product-page-container">
+    <div class="product-header">
+        <h1>{{ product.title }}</h1>
+    </div>
+
+    {% if user and user.role in ['admin', 'manager'] %}
+    <div class="product-management">
+        <a href="/manage/products/edit/{{ product.id }}" class="btn btn-warning btn-lg">
+            ✏️ Редактировать блюдо
+        </a>
+        <button type="button" class="btn btn-danger btn-lg" 
+                data-delete-url="/manage/products/delete/{{ product.id }}"
+                data-delete-message="Удалить блюдо «{{ product.title }}»? Это действие нельзя отменить.">
+            🗑️ Удалить блюдо
+        </button>
+    </div>
+    {% endif %}
+
+    <div class="product-layout">
+        <!-- Левая колонка: фото -->
+        <div class="product-image-container">
+            <div class="product-image">📸</div>
+        </div>
+
+        <!-- Правая колонка: краткая информация -->
+        <div class="product-side-info">
+            {% if product.weight %}
+            <div class="product-info-card">
+                <h4>⚖️ Выход</h4>
+                <p>{{ product.weight }}</p>
+            </div>
+            {% endif %}
+
+            {% if product.allergens %}
+            <div class="product-info-card">
+                <h4>⚠️ Аллергены</h4>
+                <p>{{ product.allergens }}</p>
+            </div>
+            {% endif %}
+
+            {% if product.gastronomic_pairings %}
+            <div class="product-info-card">
+                <h4>🍷 Гастрономические сочетания</h4>
+                <p>{{ product.gastronomic_pairings }}</p>
+            </div>
+            {% endif %}
+        </div>
+    </div>
+
+    <!-- Основной контент под фото -->
+    <div class="product-main-content">
+        <div class="product-info-card">
+            <h4>🥘 Ингредиенты</h4>
+            <p>{{ product.ingredients }}</p>
+        </div>
+
+        {% if product.description %}
+        <div class="product-info-card">
+            <h4>👨‍🍳 Процесс приготовления</h4>
+            <p>{{ product.description }}</p>
+        </div>
+        {% endif %}
+
+        {% if product.features %}
+        <div class="product-info-card">
+            <h4>✨ Особенности блюда</h4>
+            <p>{{ product.features }}</p>
+        </div>
+        {% endif %}
+
+        {% if product.table_setting %}
+        <div class="product-info-card">
+            <h4>🍽️ Подача</h4>
+            <p>{{ product.table_setting }}</p>
+        </div>
+        {% endif %}
+    </div>
+
+    <div class="back-button-container">
+        <a href="/categories/{{ product.category.id }}" class="btn-back">← Назад к категории</a>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+// Анимация появления карточек
+const cards = document.querySelectorAll('.card');
+cards.forEach((card, i) => {
+    card.style.opacity = 0;
+    setTimeout(() => {
+        card.style.transition = 'opacity 0.5s';
+        card.style.opacity = 1;
+    }, 100 + i * 150);
+});
+</script>
+{% endblock %}
+
+{% include 'components/delete_modal.html' %} 
