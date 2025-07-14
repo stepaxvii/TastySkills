@@ -34,7 +34,7 @@
                 </div>
                 {% endif %}
                 <div class="card-body">
-                    <form method="post">
+                    <form method="post" enctype="multipart/form-data">
                         <div class="row">
                             <div class="col-md-6">
                                 <div class="mb-3">
@@ -59,6 +59,10 @@
                                     <label for="allergens" class="form-label">Аллергены</label>
                                     <input type="text" class="form-control" id="allergens" name="allergens" 
                                            placeholder="Например: Глютен, Молоко, Орехи">
+                                </div>
+                                <div class="mb-3">
+                                    <label for="image" class="form-label">Изображение блюда</label>
+                                    <input type="file" class="form-control" id="image" name="image" accept="image/*">
                                 </div>
                             </div>
                             

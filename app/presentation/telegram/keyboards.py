@@ -1,7 +1,6 @@
 from aiogram.types import InlineKeyboardMarkup, InlineKeyboardButton, ReplyKeyboardMarkup, KeyboardButton
 
 def get_registration_choice_keyboard() -> InlineKeyboardMarkup:
-    """Клавиатура выбора типа регистрации"""
     keyboard = InlineKeyboardMarkup(inline_keyboard=[
         [
             InlineKeyboardButton(text="👑 Регистрация менеджера", callback_data="register_manager")
@@ -13,7 +12,6 @@ def get_registration_choice_keyboard() -> InlineKeyboardMarkup:
     return keyboard
 
 def get_manager_menu_keyboard() -> ReplyKeyboardMarkup:
-    """Клавиатура меню менеджера"""
     keyboard = ReplyKeyboardMarkup(
         keyboard=[
             [KeyboardButton(text="🍽️ Работа с меню")],

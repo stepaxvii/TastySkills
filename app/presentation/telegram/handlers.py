@@ -26,8 +26,6 @@ router = Router()
 
 @router.message(Command("start"))
 async def cmd_start(message: Message, state: FSMContext) -> None:
-    """Обработчик команды /start"""
-    assert message.from_user is not None
     user_id = message.from_user.id
     
     db = SessionLocal()

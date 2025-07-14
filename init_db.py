@@ -1,9 +1,4 @@
 #!/usr/bin/env python3
-"""
-Скрипт инициализации базы данных TastySkills
-Создает демо-ресторан "Варенье и Икра" с полным меню русской кухни
-"""
-
 import sys
 import os
 sys.path.append(os.path.dirname(os.path.abspath(__file__)))

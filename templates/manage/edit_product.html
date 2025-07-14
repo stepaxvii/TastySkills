@@ -20,9 +20,21 @@
                     <p class="text-muted mb-0">Категория: {{ product.category.title }} | Раздел: {{ product.category.section.name }} | Ресторан: {{ product.restaurant.name }}</p>
                 </div>
                 <div class="card-body">
-                    <form method="post">
+                    <form method="post" enctype="multipart/form-data">
                         <div class="row">
                             <div class="col-md-6">
+                                {% if product.image_path %}
+                                <div class="mb-3">
+                                    <label class="form-label">Текущее изображение</label><br>
+                                    <img src="/uploads/{{ product.image_path }}" alt="{{ product.title }}" style="max-width:100%;max-height:180px;object-fit:contain;">
+                                </div>
+                                {% endif %}
+                                <div class="mb-3">
+                                    <label for="image" class="form-label">Новое изображение блюда</label>
+                                    <input type="file" class="form-control" id="image" name="image" accept="image/*">
+                                    <small class="form-text text-muted">Если не выбрано — останется текущее изображение.</small>
+                                </div>
+                                
                                 <div class="mb-3">
                                     <label for="title" class="form-label">Название блюда *</label>
                                     <input type="text" class="form-control" id="title" name="title" required 

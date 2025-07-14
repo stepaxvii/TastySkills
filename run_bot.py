@@ -1,8 +1,4 @@
 #!/usr/bin/env python3
-"""
-Скрипт для запуска Telegram бота
-"""
-
 import asyncio
 import logging
 import os

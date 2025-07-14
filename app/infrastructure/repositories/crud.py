@@ -6,7 +6,6 @@ from app.presentation.api.auth import get_password_hash, verify_password
 from typing import Optional, List, Dict, Any, Union
 import json
 
-# User CRUD operations
 def get_user(db: Session, user_id: int) -> Optional[User]:
     return db.query(User).filter(User.id == user_id).first()
 
@@ -64,7 +63,6 @@ def delete_user(db: Session, user_id: int) -> Optional[User]:
         db.commit()
     return db_user
 
-# Telegram Session CRUD operations
 def get_telegram_session(db: Session, telegram_id: int) -> Optional[TelegramSession]:
     return db.query(TelegramSession).filter(TelegramSession.telegram_id == telegram_id).first()
 
@@ -108,7 +106,6 @@ def get_session_data(db: Session, telegram_id: int) -> Dict[str, Any]:
             return {}
     return {}
 
-# Restaurant CRUD operations
 def get_restaurant(db: Session, restaurant_id: int) -> Optional[Restaurant]:
     return db.query(Restaurant).filter(Restaurant.id == restaurant_id).first()
 
@@ -144,7 +141,6 @@ def delete_restaurant(db: Session, restaurant_id: int) -> Optional[Restaurant]:
         db.commit()
     return db_restaurant
 
-# Section CRUD operations
 def get_section(db: Session, section_id: int) -> Optional[Section]:
     return db.query(Section).filter(Section.id == section_id).first()
 
@@ -177,7 +173,6 @@ def delete_section(db: Session, section_id: int) -> Optional[Section]:
         db.commit()
     return db_section
 
-# Category CRUD operations
 def get_category(db: Session, category_id: int) -> Optional[Category]:
     return db.query(Category).filter(Category.id == category_id).first()
 
@@ -213,7 +208,6 @@ def delete_category(db: Session, category_id: int) -> Optional[Category]:
         db.commit()
     return db_category
 
-# Product CRUD operations
 def get_product(db: Session, product_id: int) -> Optional[Product]:
     return db.query(Product).filter(Product.id == product_id).first()
 
@@ -251,7 +245,7 @@ def update_product(db: Session, product_id: int, product_update: Any) -> Optiona
 def delete_product(db: Session, product_id: int) -> Optional[Product]:
     db_product = get_product(db, product_id)
     if db_product:
-        db_product.is_deleted = True
+        db_product.is_deleted = True # type: ignore
         db.commit()
         db.refresh(db_product)
     return db_product

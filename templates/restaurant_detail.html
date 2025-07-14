@@ -30,10 +30,10 @@
         {% if user and user.role in ['admin', 'manager'] %}
         <div class="management-buttons d-flex gap-2">
             <a href="/manage/sections/create/{{ restaurant.id }}" class="btn btn-success btn-lg" title="Создать раздел">
-                ➕
+                ➕ Создать раздел
             </a>
             <a href="/manage/restaurants/edit/{{ restaurant.id }}" class="btn btn-warning btn-lg" title="Редактировать ресторан">
-                ✏️
+                ✏️ Редактировать ресторан
             </a>
         </div>
         {% endif %}

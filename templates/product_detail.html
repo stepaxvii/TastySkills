@@ -6,7 +6,7 @@
     {% if is_demo %}
     <li class="breadcrumb-item"><a href="/demo">Демо-ресторан</a></li>
     <li class="breadcrumb-item"><a href="/restaurants/{{ product.restaurant.id }}/sections/{{ product.category.section.id }}">{{ product.category.section.name }}</a></li>
-    <li class="breadcrumb-item"><a href="/categories/{{ product.category.id }}">{{ product.category.title }}</a></li>
+    <li class="breadcrumb-item"><a href="/restaurants/{{ product.restaurant.id }}/sections/{{ product.category.section.id }}/categories/{{ product.category.id }}">{{ product.category.title }}</a></li>
     <li class="breadcrumb-item active" aria-current="page"><span>{{ product.title }}</span></li>
     {% else %}
     {% if user and user.role == 'admin' %}
@@ -14,7 +14,7 @@
     {% endif %}
     <li class="breadcrumb-item"><a href="/restaurants/{{ product.restaurant.id }}">{{ product.restaurant.name }}</a></li>
     <li class="breadcrumb-item"><a href="/restaurants/{{ product.restaurant.id }}/sections/{{ product.category.section.id }}">{{ product.category.section.name }}</a></li>
-    <li class="breadcrumb-item"><a href="/categories/{{ product.category.id }}">{{ product.category.title }}</a></li>
+    <li class="breadcrumb-item"><a href="/restaurants/{{ product.restaurant.id }}/sections/{{ product.category.section.id }}/categories/{{ product.category.id }}">{{ product.category.title }}</a></li>
     <li class="breadcrumb-item active" aria-current="page"><span>{{ product.title }}</span></li>
     {% endif %}
 {% endset %}
@@ -42,7 +42,13 @@
     <div class="product-layout">
         <!-- Левая колонка: фото -->
         <div class="product-image-container">
-            <div class="product-image">📸</div>
+            <div class="product-image" style="width:100%;height:300px;display:flex;align-items:center;justify-content:center;">
+                {% if product.image_path %}
+                    <img src="/uploads/{{ product.image_path }}" alt="{{ product.title }}" style="width:100%;height:100%;object-fit:cover;border-radius:12px;">
+                {% else %}
+                    📸
+                {% endif %}
+            </div>
         </div>
 
         <!-- Правая колонка: краткая информация -->

@@ -2,7 +2,6 @@ from pydantic import BaseModel
 from typing import Optional, List
 from datetime import datetime
 
-# User schemas
 class UserBase(BaseModel):
     username: str
     role: str = "waiter"
@@ -28,7 +27,6 @@ class User(UserBase):
     class Config:
         from_attributes = True
 
-# Telegram schemas
 class TelegramUserCreate(BaseModel):
     telegram_id: int
     telegram_username: Optional[str] = None
@@ -59,7 +57,6 @@ class TelegramSession(BaseModel):
     class Config:
         from_attributes = True
 
-# Restaurant schemas
 class RestaurantBase(BaseModel):
     name: str
     concept: Optional[str] = None
@@ -83,7 +80,6 @@ class Restaurant(RestaurantBase):
     class Config:
         from_attributes = True
 
-# Section schemas
 class SectionBase(BaseModel):
     name: str
     description: Optional[str] = None
@@ -104,7 +100,6 @@ class Section(SectionBase):
     class Config:
         from_attributes = True
 
-# Category schemas
 class CategoryBase(BaseModel):
     title: str
     description: Optional[str] = None
@@ -128,16 +123,16 @@ class Category(CategoryBase):
     class Config:
         from_attributes = True
 
-# Product schemas
 class ProductBase(BaseModel):
     title: str
     weight: Optional[str] = None
     ingredients: str
     allergens: Optional[str] = None
     description: Optional[str] = None
-    features: Optional[str] = None  # Особенности блюда, интересные факты
+    features: Optional[str] = None
     table_setting: Optional[str] = None
     gastronomic_pairings: Optional[str] = None
+    image_path: Optional[str] = None
     is_deleted: Optional[bool] = False
 
 class ProductCreate(ProductBase):
@@ -150,9 +145,10 @@ class ProductUpdate(BaseModel):
     ingredients: Optional[str] = None
     allergens: Optional[str] = None
     description: Optional[str] = None
-    features: Optional[str] = None  # Особенности блюда, интересные факты
+    features: Optional[str] = None
     table_setting: Optional[str] = None
     gastronomic_pairings: Optional[str] = None
+    image_path: Optional[str] = None
     category_id: Optional[int] = None
     restaurant_id: Optional[int] = None
 
@@ -167,7 +163,6 @@ class Product(ProductBase):
     class Config:
         from_attributes = True
 
-# Token schemas
 class Token(BaseModel):
     access_token: str
     token_type: str
@@ -175,7 +170,6 @@ class Token(BaseModel):
 class TokenData(BaseModel):
     username: Optional[str] = None
 
-# Response schemas
 class Message(BaseModel):
     message: str
 

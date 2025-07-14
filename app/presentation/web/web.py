@@ -1,4 +1,4 @@
-from fastapi import APIRouter, Request, Depends, HTTPException, Form
+from fastapi import APIRouter, Request, Depends, HTTPException, Form, UploadFile, File
 from fastapi.responses import HTMLResponse, RedirectResponse
 from fastapi.templating import Jinja2Templates
 from sqlalchemy.orm import Session
@@ -23,6 +23,7 @@ import os
 from fastapi import status
 from fastapi import FastAPI
 from starlette.exceptions import HTTPException
+from fastapi.staticfiles import StaticFiles
 
 router = APIRouter()
 templates = Jinja2Templates(directory="templates")
@@ -313,7 +314,7 @@ async def category_detail(
     if category is None or int(getattr(category, 'section_id', -1)) != int(section_id) or int(getattr(category, 'restaurant_id', -1)) != int(restaurant_id):
         raise HTTPException(status_code=404, detail="Category not found or does not belong to section/restaurant")
     check_restaurant_access(current_user, restaurant_id, db)
-    products = get_products_by_category(db, category_id)
+    products = [p for p in get_products_by_category(db, category_id) if not getattr(p, 'is_deleted', False)]
     demo_restaurant_id = get_demo_restaurant_id(db)
     is_demo = demo_restaurant_id and restaurant_id == demo_restaurant_id
     return templates.TemplateResponse("category_detail.html", {
@@ -706,19 +707,30 @@ async def create_product_post(
     features: str = Form(""),
     table_setting: str = Form(""),
     gastronomic_pairings: str = Form(""),
+    image: UploadFile = File(None),
     db: Session = Depends(get_db)
 ) -> Any:
-    """Создание продукта"""
+    """Создание продукта с поддержкой загрузки изображения"""
+    import os
+    from uuid import uuid4
     current_user = get_current_user_from_cookies(request, db)
     check_manager_access(current_user)
-    
-    # Проверяем доступ к категории
     check_category_access(current_user, category_id, db)
-    
     category = get_category(db, category_id)
     if not category:
         raise HTTPException(status_code=404, detail="Category not found")
-    
+
+    image_path = None
+    if image and image.filename:
+        uploads_dir = "uploads"
+        os.makedirs(uploads_dir, exist_ok=True)
+        ext = os.path.splitext(image.filename)[1]
+        unique_name = f"product_{uuid4().hex}{ext}"
+        file_path = os.path.join(uploads_dir, unique_name)
+        with open(file_path, "wb") as f:
+            f.write(await image.read())
+        image_path = unique_name
+
     product_data = ProductCreate(
         title=title,
         weight=weight if weight else None,
@@ -728,13 +740,12 @@ async def create_product_post(
         features=features if features else None,
         table_setting=table_setting if table_setting else None,
         gastronomic_pairings=gastronomic_pairings if gastronomic_pairings else None,
+        image_path=image_path,
         category_id=category_id,
         restaurant_id=category.restaurant_id  # type: ignore
     )
-    
     create_product(db, product_data)
-    # Перенаправляем обратно на страницу создания блюда с сообщением об успехе
-    return RedirectResponse(url=f"/restaurants/{restaurant_id}/sections/{section_id}/categories/{category_id}?success=true", status_code=302)
+    return RedirectResponse(url=f"/restaurants/{restaurant_id}/sections/{section_id}/categories/{category_id}", status_code=302)
 
 @router.get("/restaurants/{restaurant_id}/sections/{section_id}/categories/{category_id}/products/{product_id}/manage/edit", response_class=HTMLResponse)
 async def edit_product_page(
@@ -778,19 +789,34 @@ async def edit_product_post(
     features: str = Form(""),
     table_setting: str = Form(""),
     gastronomic_pairings: str = Form(""),
+    image: UploadFile = File(None),
     db: Session = Depends(get_db)
 ) -> Any:
-    """Редактирование продукта"""
+    """Редактирование продукта с поддержкой смены изображения"""
+    import os
+    from uuid import uuid4
     current_user = get_current_user_from_cookies(request, db)
     check_manager_access(current_user)
-    
-    # Проверяем доступ к продукту
     check_product_access(current_user, product_id, db)
-    
     product = get_product(db, product_id)
     if not product:
         raise HTTPException(status_code=404, detail="Product not found")
-    
+
+    image_path = product.image_path
+    if isinstance(image_path, str):
+        image_path = image_path
+    elif image_path is not None:
+        image_path = str(image_path)
+    if image and image.filename:
+        uploads_dir = "uploads"
+        os.makedirs(uploads_dir, exist_ok=True)
+        ext = os.path.splitext(image.filename)[1]
+        unique_name = f"product_{uuid4().hex}{ext}"
+        file_path = os.path.join(uploads_dir, unique_name)
+        with open(file_path, "wb") as f:
+            f.write(await image.read())
+        image_path = unique_name
+
     product_update = ProductUpdate(
         title=title,
         weight=weight if weight else None,
@@ -799,9 +825,9 @@ async def edit_product_post(
         description=description if description else None,
         features=features if features else None,
         table_setting=table_setting if table_setting else None,
-        gastronomic_pairings=gastronomic_pairings if gastronomic_pairings else None
+        gastronomic_pairings=gastronomic_pairings if gastronomic_pairings else None,
+        image_path=image_path
     )
-    
     update_product(db, product_id, product_update)
     return RedirectResponse(url=f"/restaurants/{restaurant_id}/sections/{section_id}/categories/{category_id}/products/{product_id}", status_code=302)
 
