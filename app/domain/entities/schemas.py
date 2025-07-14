@@ -138,6 +138,7 @@ class ProductBase(BaseModel):
     features: Optional[str] = None  # Особенности блюда, интересные факты
     table_setting: Optional[str] = None
     gastronomic_pairings: Optional[str] = None
+    is_deleted: Optional[bool] = False
 
 class ProductCreate(ProductBase):
     category_id: int
@@ -161,6 +162,7 @@ class Product(ProductBase):
     restaurant_id: int
     created_at: datetime
     modified_at: datetime
+    is_deleted: bool = False
 
     class Config:
         from_attributes = True

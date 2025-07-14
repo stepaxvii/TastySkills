@@ -22,8 +22,8 @@
         <h1>{{ category.title }}</h1>
         {% if user and user.role in ['admin', 'manager'] %}
         <div class="management-buttons">
-            <a href="/manage/products/create/{{ category.id }}" class="btn btn-success btn-lg">
-                ➕ Создать блюдо
+            <a href="/manage/products/create/{{ category.id }}" class="btn btn-success btn-lg" title="Создать блюдо">
+                ➕
             </a>
         </div>
         {% endif %}

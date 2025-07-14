@@ -96,6 +96,7 @@ class Product(Base):
     restaurant_id = Column(Integer, ForeignKey("restaurants.id"))
     created_at = Column(DateTime, default=lambda: datetime.now(timezone.utc))
     modified_at = Column(DateTime, default=lambda: datetime.now(timezone.utc), onupdate=lambda: datetime.now(timezone.utc))
+    is_deleted = Column(Boolean, default=False)
     
     # Relationships
     category = relationship("Category", back_populates="products")

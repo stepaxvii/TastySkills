@@ -251,8 +251,9 @@ def update_product(db: Session, product_id: int, product_update: Any) -> Optiona
 def delete_product(db: Session, product_id: int) -> Optional[Product]:
     db_product = get_product(db, product_id)
     if db_product:
-        db.delete(db_product)
+        db_product.is_deleted = True
         db.commit()
+        db.refresh(db_product)
     return db_product
 
 def get_first_product_by_category(db: Session, category_id: int):

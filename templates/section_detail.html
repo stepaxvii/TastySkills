@@ -20,8 +20,8 @@
         <h1>{{ section.name }}</h1>
         {% if user and user.role in ['admin', 'manager'] %}
         <div class="management-buttons">
-            <a href="/manage/categories/create/{{ section.id }}" class="btn btn-success btn-lg">
-                ➕ Создать категорию
+            <a href="/manage/categories/create/{{ section.id }}" class="btn btn-success btn-lg" title="Создать категорию">
+                ➕
             </a>
         </div>
         {% endif %}
@@ -48,10 +48,11 @@
             </div>
             {% if user and user.role in ['admin', 'manager'] %}
             <div class="category-actions">
-                <a href="/manage/categories/edit/{{ category.id }}" class="btn btn-outline-warning btn-sm">✏️</a>
+                <a href="/manage/categories/edit/{{ category.id }}" class="btn btn-outline-warning btn-sm" title="Редактировать категорию">✏️</a>
                 <button type="button" class="btn btn-outline-danger btn-sm" 
                         data-delete-url="/manage/categories/delete/{{ category.id }}"
-                        data-delete-message="Удалить категорию «{{ category.title }}»? Все блюда в этой категории также будут удалены.">
+                        data-delete-message="Удалить категорию «{{ category.title }}»? Все блюда в этой категории также будут удалены."
+                        title="Удалить категорию">
                     🗑️
                 </button>
             </div>

@@ -333,7 +333,7 @@ async def product_detail(
     product_id: int,
     db: Session = Depends(get_db)
 ) -> Any:
-    """Детальная страница продукта"""
+    """Детальная страница продукта с навигацией по продуктам категории"""
     current_user = get_current_user_from_cookies(request, db)
     product = get_product(db, product_id)
     if product is None or int(getattr(product, 'category_id', -1)) != int(category_id) or int(getattr(product, 'restaurant_id', -1)) != int(restaurant_id):
@@ -348,11 +348,24 @@ async def product_detail(
     check_restaurant_access(current_user, restaurant_id, db)
     demo_restaurant_id = get_demo_restaurant_id(db)
     is_demo = demo_restaurant_id and restaurant_id == demo_restaurant_id
+
+    # Получаем все продукты категории (не удалённые, по порядку)
+    products = [p for p in get_products_by_category(db, category_id) if not getattr(p, 'is_deleted', False)]
+    product_ids = [p.id for p in products]
+    try:
+        idx = product_ids.index(product.id)
+    except ValueError:
+        idx = -1
+    prev_product = products[idx-1] if idx > 0 else None
+    next_product = products[idx+1] if idx != -1 and idx < len(products)-1 else None
+
     return templates.TemplateResponse("product_detail.html", {
         "request": request,
         "user": current_user,
         "product": product,
-        "is_demo": is_demo
+        "is_demo": is_demo,
+        "prev_product": prev_product,
+        "next_product": next_product
     })
 
 

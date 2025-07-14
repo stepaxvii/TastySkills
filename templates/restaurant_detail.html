@@ -29,11 +29,11 @@
         <h1>{{ restaurant.name }}</h1>
         {% if user and user.role in ['admin', 'manager'] %}
         <div class="management-buttons d-flex gap-2">
-            <a href="/manage/sections/create/{{ restaurant.id }}" class="btn btn-success btn-lg">
-                ➕ Создать раздел
+            <a href="/manage/sections/create/{{ restaurant.id }}" class="btn btn-success btn-lg" title="Создать раздел">
+                ➕
             </a>
-            <a href="/manage/restaurants/edit/{{ restaurant.id }}" class="btn btn-warning btn-lg">
-                ✏️ Редактировать ресторан
+            <a href="/manage/restaurants/edit/{{ restaurant.id }}" class="btn btn-warning btn-lg" title="Редактировать ресторан">
+                ✏️
             </a>
         </div>
         {% endif %}
@@ -53,10 +53,11 @@
             </div>
             {% if user and user.role in ['admin', 'manager'] %}
             <div class="section-actions">
-                <a href="/manage/sections/edit/{{ section.id }}" class="btn btn-outline-warning btn-sm">✏️</a>
+                <a href="/manage/sections/edit/{{ section.id }}" class="btn btn-outline-warning btn-sm" title="Редактировать раздел">✏️</a>
                 <button type="button" class="btn btn-outline-danger btn-sm" 
                         data-delete-url="/restaurants/{{ restaurant.id }}/sections/{{ section.id }}/manage/delete"
-                        data-delete-message="Удалить раздел «{{ section.name }}»? Все категории и блюда в этом разделе также будут удалены.">
+                        data-delete-message="Удалить раздел «{{ section.name }}»? Все категории и блюда в этом разделе также будут удалены."
+                        title="Удалить раздел">
                     🗑️
                 </button>
             </div>

@@ -383,6 +383,9 @@ async def show_waiters(message: Message) -> None:
 async def start_create_restaurant(message: Message) -> None:
     db = SessionLocal()
     try:
+        if not message.from_user:
+            await message.answer("Ошибка: не удалось определить пользователя Telegram.")
+            return
         user = get_user_by_telegram_id(db, message.from_user.id)
         if user is None:
             await message.answer("❌ Только менеджеры могут создавать ресторан.")
