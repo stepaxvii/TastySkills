@@ -29,10 +29,10 @@
         <h1>{{ restaurant.name }}</h1>
         {% if user and user.role in ['admin', 'manager'] %}
         <div class="management-buttons d-flex gap-2">
-            <a href="/manage/sections/create/{{ restaurant.id }}" class="btn btn-success btn-lg" title="Создать раздел">
+            <a href="/manage/sections/create/{{ restaurant.id }}" class="btn btn-outline-success btn-lg" title="Создать раздел">
                 ➕ Создать раздел
             </a>
-            <a href="/manage/restaurants/edit/{{ restaurant.id }}" class="btn btn-warning btn-lg" title="Редактировать ресторан">
+            <a href="/manage/restaurants/edit/{{ restaurant.id }}" class="btn btn-outline-warning btn-lg" title="Редактировать ресторан">
                 ✏️ Редактировать ресторан
             </a>
         </div>
@@ -71,7 +71,7 @@
             <h3 class="text-muted mb-3">Здесь пока пусто</h3>
             <p class="text-muted mb-4">В этом ресторане пока нет разделов меню.</p>
             {% if user and user.role in ['admin', 'manager'] %}
-            <a href="/manage/sections/create/{{ restaurant.id }}" class="btn btn-success btn-lg">
+            <a href="/manage/sections/create/{{ restaurant.id }}" class="btn btn-outline-success btn-lg">
                 ➕ Создать первый раздел
             </a>
             {% endif %}

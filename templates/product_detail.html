@@ -25,20 +25,6 @@
         <h1>{{ product.title }}</h1>
     </div>
 
-    {% if user and user.role in ['admin', 'manager'] %}
-    <div class="product-management">
-        <a href="/manage/products/edit/{{ product.id }}" class="btn btn-warning btn-lg" title="Редактировать продукт">
-            ✏️
-        </a>
-        <button type="button" class="btn btn-danger btn-lg" 
-                data-delete-url="/manage/products/delete/{{ product.id }}"
-                data-delete-message="Удалить продукт «{{ product.title }}»? Это действие нельзя отменить."
-                title="Удалить продукт">
-            🗑️
-        </button>
-    </div>
-    {% endif %}
-
     <div class="product-layout">
         <!-- Левая колонка: фото -->
         <div class="product-image-container">
@@ -107,6 +93,19 @@
     <div class="back-button-container">
         <a href="/restaurants/{{ product.restaurant.id }}/sections/{{ product.category.section.id }}/categories/{{ product.category.id }}" class="btn-back">← Назад к категории</a>
     </div>
+    {% if user and user.role in ['admin', 'manager'] %}
+    <div class="product-management">
+        <a href="/manage/products/edit/{{ product.id }}" class="btn btn-outline-warning btn-lg" title="Редактировать продукт">
+            ✏️ Редактировать
+        </a>
+        <button type="button" class="btn btn-outline-danger btn-lg" 
+                data-delete-url="/manage/products/delete/{{ product.id }}"
+                data-delete-message="Удалить «{{ product.title }}»?"
+                title="Удалить продукт">
+            🗑️ Удалить
+        </button>
+    </div>
+    {% endif %}
 </div>
 {% endblock %}
 

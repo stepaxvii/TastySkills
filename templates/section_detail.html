@@ -20,7 +20,7 @@
         <h1>{{ section.name }}</h1>
         {% if user and user.role in ['admin', 'manager'] %}
         <div class="management-buttons">
-            <a href="/manage/categories/create/{{ section.id }}" class="btn btn-success btn-lg" title="Создать категорию">
+            <a href="/manage/categories/create/{{ section.id }}" class="btn btn-outline-success btn-lg" title="Создать категорию">
                 ➕ Создать категорию
             </a>
         </div>
@@ -59,6 +59,12 @@
             {% endif %}
         </div>
         {% endfor %}
+        {% set remainder = categories|length % 4 %}
+        {% if remainder != 0 %}
+            {% for _ in range(4 - remainder) %}
+                <div class="category-card placeholder-card"></div>
+            {% endfor %}
+        {% endif %}
     </div>
     {% else %}
     <div class="empty-state">
@@ -66,7 +72,7 @@
             <h3 class="text-muted mb-3">Здесь пока пусто</h3>
             <p class="text-muted mb-4">В этом разделе пока нет категорий продуктов.</p>
             {% if user and user.role in ['admin', 'manager'] %}
-            <a href="/manage/categories/create/{{ section.id }}" class="btn btn-success btn-lg">
+            <a href="/manage/categories/create/{{ section.id }}" class="btn btn-outline-success btn-lg">
                 ➕ Создать первую категорию
             </a>
             {% endif %}

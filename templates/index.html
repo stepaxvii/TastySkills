@@ -8,7 +8,23 @@
     <p class="lead mb-4">Современная система управления меню ресторанов и кафе</p>
 </div>
 
-
+<div class="action-buttons-section text-center mb-5">
+    <div class="action-buttons">
+        {% if user %}
+            {% if user.role == 'admin' %}
+                <a href="/restaurants" class="btn btn-primary btn-lg me-3">🏪 Управление ресторанами</a>
+            {% endif %}
+            <a href="/recent-changes" class="btn btn-outline-primary btn-lg me-3">📊 Последние изменения</a>
+            {% if user.role in ['admin', 'manager'] %}
+                <a href="/manage/restaurants/create" class="btn btn-outline-success btn-lg">➕ Создать ресторан</a>
+            {% endif %}
+        {% else %}
+            <a href="/demo" class="btn btn-primary btn-lg me-3">🍽️ Демо-ресторан</a>
+            <a href="/login" class="btn btn-outline-primary btn-lg me-3">🔐 Войти в систему</a>
+            <a href="/about" class="btn btn-about btn-lg">📖 О проекте</a>
+        {% endif %}
+    </div>
+</div>
 
 <div class="features-section mb-5">
     <div class="row g-4">
@@ -33,25 +49,6 @@
                 <p>Мгновенный поиск и навигация по меню с детальной информацией</p>
             </div>
         </div>
-    </div>
-</div>
-
-<div class="action-buttons-section text-center mb-5">
-    <h2 class="section-title mb-4">🚀 Начать работу</h2>
-    <div class="action-buttons">
-        {% if user %}
-            {% if user.role == 'admin' %}
-                <a href="/restaurants" class="btn btn-primary btn-lg me-3">🏪 Управление ресторанами</a>
-            {% endif %}
-            <a href="/recent-changes" class="btn btn-outline-primary btn-lg me-3">📊 Последние изменения</a>
-            {% if user.role in ['admin', 'manager'] %}
-                <a href="/manage/restaurants/create" class="btn btn-success btn-lg">➕ Создать ресторан</a>
-            {% endif %}
-        {% else %}
-            <a href="/demo" class="btn btn-primary btn-lg me-3">🍽️ Демо-ресторан</a>
-            <a href="/login" class="btn btn-outline-primary btn-lg me-3">🔐 Войти в систему</a>
-            <a href="/about" class="btn btn-outline-success btn-lg">📖 О проекте</a>
-        {% endif %}
     </div>
 </div>
 

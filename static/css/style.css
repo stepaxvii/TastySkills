@@ -1,26 +1,168 @@
-/* Основные стили для TastySkills */
-
+/* Цветовая палитра для food-tech/ресторанного проекта */
 :root {
-    --primary-color: #3498db;
-    --secondary-color: #6c757d;
-    --success-color: #27ae60;
-    --warning-color: #f39c12;
-    --danger-color: #e74c3c;
-    --light-color: #f8f9fa;
-    --dark-color: #2c3e50;
-    --border-radius: 12px;
-    --transition-speed: 0.3s;
-    --shadow-light: 0 2px 8px rgba(0,0,0,0.06);
-    --shadow-medium: 0 4px 16px rgba(0,0,0,0.08);
-    --shadow-heavy: 0 8px 32px rgba(0,0,0,0.1);
+    --primary: #217dbb;
+    --primary-hover: #2986c7;
+    --success: #27ae60;
+    --success-hover: #34b46e;
+    --warning: #f9ca24;
+    --warning-hover: #ffe066;
+    --danger: #e74c3c;
+    --danger-hover: #f16a5d;
+    --bg: #f8fafc;
+    --card-bg: #fff;
+    --text: #222;
+    --text-muted: #7b8a99;
+    --border: #e9ecef;
 }
 
 body {
-    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-    line-height: 1.6;
-    color: var(--dark-color);
-    background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
-    min-height: 100vh;
+    font-family: 'Inter', Arial, sans-serif;
+    background: linear-gradient(135deg, var(--bg) 0%, #c3cfe2 100%);
+    color: var(--text);
+}
+
+h1, h2, h3, h4, h5, h6 {
+    font-weight: 700;
+    color: var(--text);
+    letter-spacing: 0.01em;
+}
+
+.btn, .btn-lg, .btn-success, .btn-warning, .btn-danger, .btn-outline-warning, .btn-outline-danger, .btn-outline-success, .btn-primary, .btn-secondary, .btn-outline-secondary {
+    border-radius: 18px !important;
+    font-weight: 600;
+    font-size: 1.1rem;
+    padding: 0.7em 1.5em;
+    box-shadow: 0 2px 12px rgba(52,152,219,0.10);
+    transition: background 0.18s, color 0.18s, box-shadow 0.18s, transform 0.12s;
+    border: none;
+    outline: none;
+}
+.btn-warning, .btn-warning:active, .btn-warning:focus {
+    background: linear-gradient(45deg, #f9ca24, #e67e22) !important;
+    color: #fff !important;
+    border: none !important;
+}
+.btn-warning:hover, .btn-warning:active:hover, .btn-warning:focus:hover {
+    background: linear-gradient(45deg, #e67e22, #b9770e) !important;
+    color: #fff !important;
+    box-shadow: 0 4px 18px rgba(249,202,36,0.13);
+    transform: translateY(-2px) scale(1.03);
+}
+.btn-primary, .btn-primary:active, .btn-primary:focus,
+.btn-outline-primary, .btn-outline-primary:active, .btn-outline-primary:focus {
+    background: linear-gradient(45deg, #217dbb, #3498db) !important;
+    color: #fff !important;
+    border: none !important;
+}
+.btn-primary:hover, .btn-primary:active:hover, .btn-primary:focus:hover,
+.btn-outline-primary:hover, .btn-outline-primary:active:hover, .btn-outline-primary:focus:hover {
+    background: linear-gradient(45deg, #145a86, #217dbb) !important;
+    color: #fff !important;
+    box-shadow: 0 4px 18px rgba(33,125,187,0.13);
+    transform: translateY(-2px) scale(1.03);
+}
+/* Кнопка 'О проекте' */
+.btn-about {
+    background: linear-gradient(45deg, #217dbb, #3498db) !important;
+    color: #fff !important;
+    border: none !important;
+}
+.btn-about:hover {
+    background: linear-gradient(45deg, #145a86, #217dbb) !important;
+    color: #fff !important;
+}
+/* Убираю белый фон у .btn, .btn-lg, .btn-outline-* по умолчанию */
+.btn, .btn-lg, .btn-outline-secondary {
+    background: #eaf4fb;
+    color: var(--primary);
+    border: 2px solid var(--primary);
+}
+.btn-outline-secondary:hover {
+    background: var(--primary-hover);
+    color: #fff;
+    border: 2px solid var(--primary-hover);
+}
+.btn-success, .btn-success:active, .btn-success:focus {
+    background: linear-gradient(45deg, #27ae60, #229954) !important;
+    color: #fff !important;
+    border: none !important;
+}
+.btn-success:hover, .btn-success:active:hover, .btn-success:focus:hover {
+    background: linear-gradient(45deg, #229954, #1e7e4a) !important;
+    color: #fff !important;
+    box-shadow: 0 4px 18px rgba(39,174,96,0.13);
+    transform: translateY(-2px) scale(1.03);
+}
+.btn-danger, .btn-outline-danger {
+    background: var(--danger);
+    color: #fff;
+}
+.btn-danger:hover, .btn-outline-danger:hover {
+    background: var(--danger-hover);
+    color: #fff;
+    box-shadow: 0 4px 18px rgba(231,76,60,0.13);
+}
+
+.card, .product-card, .category-card, .restaurant-card, .section-card {
+    border-radius: 18px;
+    box-shadow: 0 4px 24px rgba(44,62,80,0.08);
+    background: var(--card-bg);
+    transition: box-shadow 0.2s, transform 0.15s;
+    border: none;
+}
+.card:hover, .product-card:hover, .category-card:hover, .restaurant-card:hover, .section-card:hover {
+    box-shadow: 0 8px 32px rgba(52,152,219,0.18);
+    transform: translateY(-4px) scale(1.02);
+}
+
+input, textarea, select {
+    border-radius: 10px !important;
+    border: 1px solid var(--border) !important;
+    font-size: 1rem;
+    padding: 0.6em 1em;
+    background: #f8fafc;
+    transition: border 0.2s, box-shadow 0.2s;
+}
+input:focus, textarea:focus, select:focus {
+    border: 1.5px solid var(--primary) !important;
+    box-shadow: 0 2px 8px rgba(52,152,219,0.10);
+    outline: none;
+}
+
+.breadcrumb-container, .main-content, .content-wrapper, .page-header-unified {
+    border-radius: 16px;
+    background: rgba(255,255,255,0.97);
+    box-shadow: 0 2px 12px rgba(44,62,80,0.06);
+}
+
+.alert {
+    border-radius: 12px;
+    font-size: 1.05rem;
+    box-shadow: 0 2px 8px rgba(241,196,15,0.08);
+}
+.alert-success {
+    background: #eafaf1;
+    color: var(--success);
+    border: 1.5px solid var(--success);
+}
+.alert-danger {
+    background: #faeaea;
+    color: var(--danger);
+    border: 1.5px solid var(--danger);
+}
+
+.product-image, .category-image {
+    border-radius: 12px;
+    overflow: hidden;
+    background: #f0f4f8;
+    box-shadow: 0 2px 8px rgba(52,152,219,0.06);
+}
+
+.product-title, .category-title, .restaurant-title, .section-title {
+    font-weight: 700;
+    color: var(--text);
+    margin-top: 0.5em;
+    margin-bottom: 0.2em;
 }
 
 /* Навигация */
@@ -165,14 +307,8 @@ body {
 /* Хлебные крошки */
 .breadcrumb {
     background: transparent;
-    border-radius: 0;
-    padding: 0;
-    margin-bottom: 1.5rem;
-    box-shadow: none;
-    display: flex;
-    align-items: center;
-    gap: 0.5rem;
-    flex-wrap: wrap;
+    font-size: 1.05rem;
+    font-weight: 500;
 }
 
 .breadcrumb-item {
@@ -409,7 +545,7 @@ body {
 }
 
 .btn-success {
-    background: linear-gradient(45deg, var(--success-color), #229954);
+    background: linear-gradient(45deg, var(--success), #229954);
 }
 
 .btn-warning {
@@ -417,34 +553,54 @@ body {
     color: white;
 }
 
-.btn-outline-primary {
-    border: 2px solid var(--primary-color);
-    color: var(--primary-color);
+.btn-outline-primary, .btn-outline-primary:active, .btn-outline-primary:focus {
+    background: linear-gradient(45deg, #217dbb, #3498db) !important;
+    color: #fff !important;
+    border: none !important;
+}
+.btn-outline-primary:hover, .btn-outline-primary:active:hover, .btn-outline-primary:focus:hover {
+    background: linear-gradient(45deg, #145a86, #217dbb) !important;
+    color: #fff !important;
+    box-shadow: 0 4px 18px rgba(33,125,187,0.13);
+    transform: translateY(-2px) scale(1.03);
 }
 
-.btn-outline-primary:hover {
-    background: var(--primary-color);
-    color: white;
+/* Исправляю конфликт: .btn, .btn-lg, .btn-outline-secondary */
+.btn-outline-success, .btn-outline-success.btn, .btn-outline-success.btn-lg {
+    background: transparent !important;
+    color: var(--success) !important;
+    border: 2px solid var(--success) !important;
+    box-shadow: none;
+    transition: background 0.18s, color 0.18s, border 0.18s;
 }
-
-.btn-outline-success {
-    border: 2px solid var(--success-color);
-    color: var(--success-color);
-}
-
-.btn-outline-success:hover {
-    background: var(--success-color);
-    color: white;
+.btn-outline-success:hover, .btn-outline-success:focus, .btn-outline-success:active {
+    background: var(--success) !important;
+    color: #fff !important;
+    border: 2px solid var(--success) !important;
 }
 
 .btn-outline-warning {
-    border: 2px solid var(--warning-color);
-    color: var(--warning-color);
+    border: 2px solid #f7b731;
+    color: #f7b731;
+    background: transparent !important;
+}
+.btn-outline-warning:hover {
+    background: #e67e22 !important;
+    color: #fff !important;
+    border: 2px solid #e67e22;
 }
 
-.btn-outline-warning:hover {
-    background: var(--warning-color);
-    color: white;
+.btn-outline-danger, .btn-outline-danger.btn, .btn-outline-danger.btn-lg {
+    background: transparent !important;
+    color: var(--danger) !important;
+    border: 2px solid var(--danger) !important;
+    box-shadow: none;
+    transition: background 0.18s, color 0.18s, border 0.18s;
+}
+.btn-outline-danger:hover, .btn-outline-danger:focus, .btn-outline-danger:active {
+    background: var(--danger) !important;
+    color: #fff !important;
+    border: 2px solid var(--danger) !important;
 }
 
 /* Формы */
@@ -510,20 +666,37 @@ body {
 
 /* Списки карточек */
 .categories-list, .products-grid {
-    display: flex;
-    flex-wrap: wrap;
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
     gap: 1rem;
     margin-top: 1.5rem;
-    justify-content: center;
+    justify-items: center;
+    align-items: stretch;
 }
 
-.categories-list {
-    justify-content: center;
+/* --- STRICT NON-ADAPTIVE GRID FOR ALL CARDS --- */
+.products-grid, .categories-list {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 1rem;
+    margin-top: 1.5rem;
+    justify-items: center;
+    align-items: stretch;
 }
-
-.products-grid {
-    justify-content: center;
+.product-card, .category-card, .section-card, .restaurant-card {
+    width: 260px;
+    height: 340px;
+    display: flex;
+    flex-direction: column;
+    position: relative;
+    background: #f8f9fa;
+    border-radius: 12px;
+    padding: 0.75rem;
+    box-shadow: var(--shadow-light);
+    margin: 0;
+    overflow: hidden;
 }
+/* Удаляем все медиа-запросы для адаптивности сетки карточек */
 
 /* Секция с кнопками управления */
 .management-section {
@@ -533,21 +706,6 @@ body {
     background: #f8f9fa;
     border-radius: var(--border-radius);
     border: 1px solid #e9ecef;
-}
-
-/* Адаптивность для карточек */
-@media (max-width: 768px) {
-    .categories-list, .products-grid {
-        flex-direction: column;
-    }
-    
-    .section-card,
-    .category-card,
-    .product-card,
-    .restaurant-card {
-        min-width: auto;
-        max-width: none;
-    }
 }
 
 /* Стили для страницы продукта */
@@ -751,19 +909,13 @@ code {
 }
 
 /* Анимации для карточек */
-.card {
-    animation: slideInUp 0.6s ease-out;
+.card, .product-card, .category-card, .restaurant-card, .section-card {
+    opacity: 0;
+    animation: fadeInCard 0.7s ease forwards;
 }
-
-@keyframes slideInUp {
-    from {
-        opacity: 0;
-        transform: translateY(30px);
-    }
-    to {
-        opacity: 1;
-        transform: translateY(0);
-    }
+@keyframes fadeInCard {
+    from { opacity: 0; transform: translateY(20px); }
+    to { opacity: 1; transform: none; }
 }
 
 /* Эффекты при наведении */
@@ -787,9 +939,8 @@ code {
 
 /* Стили для модальных окон */
 .modal-content {
-    border-radius: var(--border-radius);
-    border: none;
-    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+    border-radius: 16px;
+    box-shadow: 0 8px 32px rgba(52,152,219,0.18);
 }
 
 .modal-header {
@@ -942,6 +1093,7 @@ code {
 /* Стили для скроллбара */
 ::-webkit-scrollbar {
     width: 8px;
+    background: #e9ecef;
 }
 
 ::-webkit-scrollbar-track {
@@ -950,8 +1102,8 @@ code {
 }
 
 ::-webkit-scrollbar-thumb {
-    background: var(--primary-color);
-    border-radius: 4px;
+    background: #b2bec3;
+    border-radius: 8px;
 }
 
 ::-webkit-scrollbar-thumb:hover {
@@ -998,4 +1150,141 @@ code {
     hyphens: auto;
     min-width: 0;
     max-width: 100%;
+} 
+
+.category-card {
+    display: flex;
+    flex-direction: column;
+    min-width: 240px;
+    max-width: 280px;
+    height: 340px;
+    position: relative;
+    background: #f8f9fa;
+    border-radius: 12px;
+    padding: 0.75rem;
+    box-shadow: var(--shadow-light);
+    margin: 0.5rem;
+}
+.category-content {
+    flex: 1 1 auto;
+    min-height: 0;
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
+}
+.category-title, .category-description {
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: normal;
+    max-height: 3.2em;
+}
+.category-actions {
+    margin-top: auto;
+    padding-top: 0.5rem;
+    border-top: 1px solid #e9ecef;
+    display: flex;
+    gap: 0.5rem;
+    justify-content: center;
+    position: absolute;
+    left: 0;
+    right: 0;
+    bottom: 0.75rem;
+    background: linear-gradient(0deg, #f8f9fa 90%, transparent 100%);
+} 
+
+.section-card {
+    display: flex;
+    flex-direction: column;
+    min-width: 240px;
+    max-width: 280px;
+    height: 170px;
+    position: relative;
+    background: #f8f9fa;
+    border-radius: 12px;
+    padding: 0.75rem;
+    box-shadow: var(--shadow-light);
+    margin: 0.5rem;
+}
+.section-content {
+    flex: 1 1 auto;
+    min-height: 0;
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
+}
+.section-title, .section-description {
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: normal;
+    max-height: 3.2em;
+}
+.section-actions {
+    margin-top: auto;
+    padding-top: 0.5rem;
+    border-top: 1px solid #e9ecef;
+    display: flex;
+    gap: 0.5rem;
+    justify-content: center;
+    position: absolute;
+    left: 0;
+    right: 0;
+    bottom: 0.75rem;
+    background: linear-gradient(0deg, #f8f9fa 90%, transparent 100%);
+} 
+
+.product-card {
+    display: flex;
+    flex-direction: column;
+    min-width: 240px;
+    max-width: 280px;
+    height: 310px;
+    position: relative;
+    background: #f8f9fa;
+    border-radius: 12px;
+    padding: 0.75rem;
+    box-shadow: var(--shadow-light);
+    margin: 0.5rem;
+}
+.product-content {
+    flex: 1 1 auto;
+    min-height: 0;
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
+}
+.product-title, .product-description {
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: normal;
+    max-height: 3.2em;
+}
+.product-actions {
+    margin-top: auto;
+    padding-top: 0.5rem;
+    border-top: 1px solid #e9ecef;
+    display: flex;
+    gap: 0.5rem;
+    justify-content: center;
+    position: absolute;
+    left: 0;
+    right: 0;
+    bottom: 0.75rem;
+    background: linear-gradient(0deg, #f8f9fa 90%, transparent 100%);
+} 
+
+/* Стили для заполнителей карточек (чтобы занимали место, но были невидимы) */
+.placeholder-card {
+    background: transparent !important;
+    box-shadow: none !important;
+    border: none !important;
+    pointer-events: none;
+    outline: none !important;
+} 
+
+/* Сокращаем расстояние между изображением и названием карточки */
+.product-image,
+.category-image,
+.section-image,
+.restaurant-image {
+    margin-bottom: 10px !important;
 } 

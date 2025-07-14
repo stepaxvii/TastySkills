@@ -377,10 +377,8 @@ async def recent_changes(
 ) -> Any:
     """Страница с недавними изменениями"""
     current_user = get_current_user_from_cookies(request, db)
-    
     if not current_user:
         return RedirectResponse(url="/login", status_code=302)
-    
     # Админы видят все изменения
     if str(current_user.role) == "admin":  # type: ignore
         recent_products = get_recent_products(db, limit=20)
@@ -392,11 +390,18 @@ async def recent_changes(
             user_restaurants = get_restaurants_by_waiter(db, current_user.id)  # type: ignore
         else:
             raise HTTPException(status_code=403, detail="Недостаточно прав")
-        
         # Получаем ID ресторанов пользователя
         restaurant_ids = [r.id for r in user_restaurants]  # type: ignore
         recent_products = get_recent_products_by_restaurants(db, restaurant_ids, limit=20)  # type: ignore
-    
+    # Подгружаем связанные category и section для каждого продукта
+    for product in recent_products:
+        category_id = getattr(product, 'category_id', None)
+        category = get_category(db, int(category_id)) if category_id is not None else None
+        product.category = category
+        if category:
+            section_id = getattr(category, 'section_id', None)
+            section = get_section(db, int(section_id)) if section_id is not None else None
+            product.category.section = section
     return templates.TemplateResponse("recent_changes.html", {
         "request": request,
         "user": current_user,
