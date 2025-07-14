@@ -3,21 +3,24 @@
 {% block title %}Редактировать категорию - {{ category.title }}{% endblock %}
 
 {% block content %}
-<div class="container mt-4">
+{% set breadcrumbs %}
+    <li class="breadcrumb-item"><a href="/restaurants/{{ category.restaurant.id }}">{{ category.restaurant.name }}</a></li>
+    <li class="breadcrumb-item"><a href="/restaurants/{{ category.restaurant.id }}/sections/{{ category.section.id }}">{{ category.section.name }}</a></li>
+    <li class="breadcrumb-item"><a href="/restaurants/{{ category.restaurant.id }}/sections/{{ category.section.id }}/categories/{{ category.id }}">{{ category.title }}</a></li>
+    <li class="breadcrumb-item active" aria-current="page"><span>✏️ Редактировать</span></li>
+{% endset %}
+<div class="container">
     <nav aria-label="breadcrumb">
         <ol class="breadcrumb">
             <li class="breadcrumb-item"><a href="/">Главная</a></li>
             {% if user and user.role == 'admin' %}
             <li class="breadcrumb-item"><a href="/restaurants">Рестораны</a></li>
             {% endif %}
-            <li class="breadcrumb-item"><a href="/restaurants/{{ category.restaurant.id }}">{{ category.restaurant.name }}</a></li>
-            <li class="breadcrumb-item"><a href="/sections/{{ category.section.id }}">{{ category.section.name }}</a></li>
-            <li class="breadcrumb-item"><a href="/categories/{{ category.id }}">{{ category.title }}</a></li>
-            <li class="breadcrumb-item active" aria-current="page"><span>✏️ Редактировать</span></li>
+            {{ breadcrumbs }}
         </ol>
     </nav>
 
-    <div class="row justify-content-center">
+    <div class="row justify-content-center mt-5">
         <div class="col-md-8">
             <div class="card">
                 <div class="card-header">
@@ -42,7 +45,7 @@
                         
                         <div class="d-flex gap-2">
                             <button type="submit" class="btn btn-primary">Сохранить изменения</button>
-                            <a href="/categories/{{ category.id }}" class="btn btn-secondary">Отмена</a>
+                            <a href="/restaurants/{{ category.restaurant.id }}/sections/{{ category.section.id }}/categories/{{ category.id }}" class="btn btn-secondary">Отмена</a>
                         </div>
                     </form>
                 </div>
@@ -51,7 +54,7 @@
     </div>
     
     <div class="back-button-container">
-        <a href="/categories/{{ category.id }}" class="btn-back">← Назад к категории</a>
+        <a href="/restaurants/{{ category.restaurant.id }}/sections/{{ category.section.id }}/categories/{{ category.id }}" class="btn-back">← Назад к категории</a>
     </div>
 </div>
 {% endblock %} 

@@ -8,6 +8,8 @@ from app.domain.entities.models import Base
 from app.config import UPLOAD_DIR, APP_NAME
 from app.presentation.api import auth, restaurants, sections, categories, products
 from app.presentation.web.web import router as web_router
+from starlette.exceptions import HTTPException
+from app.presentation.web.web import custom_http_exception_handler
 
 # Создаем таблицы в базе данных
 Base.metadata.create_all(bind=engine)
@@ -44,6 +46,9 @@ app.include_router(products.router, prefix="/api/v1")
 
 # Подключаем веб-роуты
 app.include_router(web_router)
+
+# Регистрируем глобальный обработчик ошибок для HTTPException
+app.add_exception_handler(HTTPException, custom_http_exception_handler)
 
 
 @app.get("/")

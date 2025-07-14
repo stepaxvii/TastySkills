@@ -2,7 +2,7 @@
 
 {% block title %}{{ section.name }} - {{ section.restaurant.name }}{% if is_demo %} - Демо{% endif %}{% endblock %}
 
-{% block breadcrumb_items %}
+{% set breadcrumbs %}
     {% if is_demo %}
     <li class="breadcrumb-item"><a href="/demo">Демо-ресторан</a></li>
     <li class="breadcrumb-item active" aria-current="page"><span>{{ section.name }}</span></li>
@@ -13,7 +13,7 @@
     <li class="breadcrumb-item"><a href="/restaurants/{{ section.restaurant.id }}">{{ section.restaurant.name }}</a></li>
     <li class="breadcrumb-item active" aria-current="page"><span>{{ section.name }}</span></li>
     {% endif %}
-{% endblock %}
+{% endset %}
 
 {% block content %}
     <div class="page-header-unified">
@@ -31,7 +31,14 @@
     <div class="categories-list">
         {% for category in categories %}
         <div class="category-card">
-            <div class="category-content" onclick="window.location.href='/categories/{{ category.id }}'">
+            <div class="category-content" onclick="window.location.href='/restaurants/{{ section.restaurant.id }}/sections/{{ section.id }}/categories/{{ category.id }}'">
+                <div class="category-image" style="width:100%;aspect-ratio:4/3;display:flex;align-items:center;justify-content:center;background:#e9ecef;border-radius:8px;margin-bottom:0.75rem;overflow:hidden;">
+                    {% if category.first_product and category.first_product.photo_url %}
+                        <img src="{{ category.first_product.photo_url }}" alt="{{ category.title }}" style="width:100%;height:100%;object-fit:cover;display:block;border-radius:8px;">
+                    {% else %}
+                        📸
+                    {% endif %}
+                </div>
                 <h5 class="category-title">
                     {{ category.title }}
                 </h5>

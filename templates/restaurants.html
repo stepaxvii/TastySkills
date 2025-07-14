@@ -10,7 +10,7 @@
         {% if user and user.role in ['admin', 'manager'] %}
         <div class="management-buttons">
             <a href="/manage/restaurants/create" class="btn btn-success btn-lg">
-                🏪 Создать ресторан
+                ➕ Создать ресторан
             </a>
         </div>
         {% endif %}
@@ -33,7 +33,7 @@
                 <p class="text-muted mb-4">В системе пока нет ресторанов.</p>
                 {% if user and user.role in ['admin', 'manager'] %}
                 <a href="/manage/restaurants/create" class="btn btn-success btn-lg">
-                    🏪 Создать первый ресторан
+                    ➕ Создать ресторан
                 </a>
                 {% endif %}
             </div>

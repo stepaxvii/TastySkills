@@ -3,7 +3,7 @@
 {% block title %}Редактировать раздел - {{ section.name }}{% endblock %}
 
 {% block content %}
-<div class="container mt-4">
+<div class="container">
     <nav aria-label="breadcrumb">
         <ol class="breadcrumb">
             <li class="breadcrumb-item"><a href="/">Главная</a></li>
@@ -11,12 +11,12 @@
             <li class="breadcrumb-item"><a href="/restaurants">Рестораны</a></li>
             {% endif %}
             <li class="breadcrumb-item"><a href="/restaurants/{{ section.restaurant.id }}">{{ section.restaurant.name }}</a></li>
-            <li class="breadcrumb-item"><a href="/sections/{{ section.id }}">{{ section.name }}</a></li>
+            <li class="breadcrumb-item"><a href="/restaurants/{{ section.restaurant.id }}/sections/{{ section.id }}">{{ section.name }}</a></li>
             <li class="breadcrumb-item active" aria-current="page"><span>✏️ Редактировать</span></li>
         </ol>
     </nav>
 
-    <div class="row justify-content-center">
+    <div class="row justify-content-center mt-5">
         <div class="col-md-8">
             <div class="card">
                 <div class="card-header">
@@ -27,30 +27,25 @@
                     <form method="post">
                         <div class="mb-3">
                             <label for="name" class="form-label">Название раздела *</label>
-                            <input type="text" class="form-control" id="name" name="name" required 
-                                   value="{{ section.name }}" placeholder="Например: Кухня, Бар, Десерты">
-                            <div class="form-text">Краткое название раздела меню</div>
+                            <input type="text" class="form-control" id="name" name="name" required value="{{ section.name }}" placeholder="Например: Горячие блюда, Напитки, Десерты">
+                            <div class="form-text">Название раздела меню</div>
                         </div>
-                        
                         <div class="mb-3">
                             <label for="description" class="form-label">Описание</label>
-                            <textarea class="form-control" id="description" name="description" rows="3"
-                                      placeholder="Описание раздела (необязательно)">{{ section.description or '' }}</textarea>
+                            <textarea class="form-control" id="description" name="description" rows="3" placeholder="Описание раздела (необязательно)">{{ section.description or '' }}</textarea>
                             <div class="form-text">Подробное описание раздела</div>
                         </div>
-                        
                         <div class="d-flex gap-2">
                             <button type="submit" class="btn btn-primary">Сохранить изменения</button>
-                            <a href="/sections/{{ section.id }}" class="btn btn-secondary">Отмена</a>
+                            <a href="/restaurants/{{ section.restaurant.id }}/sections/{{ section.id }}" class="btn btn-secondary">Отмена</a>
                         </div>
                     </form>
                 </div>
             </div>
         </div>
     </div>
-    
     <div class="back-button-container">
-        <a href="/sections/{{ section.id }}" class="btn-back">← Назад к разделу</a>
+        <a href="/restaurants/{{ section.restaurant.id }}/sections/{{ section.id }}" class="btn-back">← Назад к разделу</a>
     </div>
 </div>
 {% endblock %} 

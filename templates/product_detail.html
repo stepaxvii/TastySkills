@@ -2,10 +2,10 @@
 
 {% block title %}{{ product.title }} - {{ product.category.title }}{% if is_demo %} - Демо{% endif %}{% endblock %}
 
-{% block breadcrumb_items %}
+{% set breadcrumbs %}
     {% if is_demo %}
     <li class="breadcrumb-item"><a href="/demo">Демо-ресторан</a></li>
-    <li class="breadcrumb-item"><a href="/sections/{{ product.category.section.id }}">{{ product.category.section.name }}</a></li>
+    <li class="breadcrumb-item"><a href="/restaurants/{{ product.restaurant.id }}/sections/{{ product.category.section.id }}">{{ product.category.section.name }}</a></li>
     <li class="breadcrumb-item"><a href="/categories/{{ product.category.id }}">{{ product.category.title }}</a></li>
     <li class="breadcrumb-item active" aria-current="page"><span>{{ product.title }}</span></li>
     {% else %}
@@ -13,11 +13,11 @@
     <li class="breadcrumb-item"><a href="/restaurants">Рестораны</a></li>
     {% endif %}
     <li class="breadcrumb-item"><a href="/restaurants/{{ product.restaurant.id }}">{{ product.restaurant.name }}</a></li>
-    <li class="breadcrumb-item"><a href="/sections/{{ product.category.section.id }}">{{ product.category.section.name }}</a></li>
+    <li class="breadcrumb-item"><a href="/restaurants/{{ product.restaurant.id }}/sections/{{ product.category.section.id }}">{{ product.category.section.name }}</a></li>
     <li class="breadcrumb-item"><a href="/categories/{{ product.category.id }}">{{ product.category.title }}</a></li>
     <li class="breadcrumb-item active" aria-current="page"><span>{{ product.title }}</span></li>
     {% endif %}
-{% endblock %}
+{% endset %}
 
 {% block content %}
 <div class="product-page-container">
@@ -99,7 +99,7 @@
     </div>
 
     <div class="back-button-container">
-        <a href="/categories/{{ product.category.id }}" class="btn-back">← Назад к категории</a>
+        <a href="/restaurants/{{ product.restaurant.id }}/sections/{{ product.category.section.id }}/categories/{{ product.category.id }}" class="btn-back">← Назад к категории</a>
     </div>
 </div>
 {% endblock %}

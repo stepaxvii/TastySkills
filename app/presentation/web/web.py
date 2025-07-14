@@ -12,13 +12,17 @@ from app.infrastructure.repositories.crud import (
     create_category, update_category, delete_category,
     create_product, update_product, delete_product,
     get_restaurants_by_manager, get_restaurants_by_waiter, create_restaurant,
-    get_recent_products_by_restaurants, get_sections, get_products, get_users
+    get_recent_products_by_restaurants, get_sections, get_products, get_users,
+    get_first_product_by_category
 )
 from app.domain.entities.schemas import SectionCreate, SectionUpdate, CategoryCreate, CategoryUpdate, ProductCreate, ProductUpdate, RestaurantCreate
 from typing import Optional, Any
 from datetime import timedelta
 from app.config import ACCESS_TOKEN_EXPIRE_MINUTES
 import os
+from fastapi import status
+from fastapi import FastAPI
+from starlette.exceptions import HTTPException
 
 router = APIRouter()
 templates = Jinja2Templates(directory="templates")
@@ -250,20 +254,13 @@ async def restaurant_detail(
 ) -> Any:
     """Детальная страница ресторана"""
     current_user = get_current_user_from_cookies(request, db)
-    
-    # Проверяем доступ к ресторану
     check_restaurant_access(current_user, restaurant_id, db)
-    
     restaurant = get_restaurant(db, restaurant_id)
     if not restaurant:
         raise HTTPException(status_code=404, detail="Restaurant not found")
-    
     sections = get_sections_by_restaurant(db, restaurant_id)
-    
-    # Проверяем, является ли это демо-рестораном
     demo_restaurant_id = get_demo_restaurant_id(db)
     is_demo = demo_restaurant_id and restaurant_id == demo_restaurant_id
-    
     return templates.TemplateResponse("restaurant_detail.html", {
         "request": request,
         "user": current_user,
@@ -272,29 +269,28 @@ async def restaurant_detail(
         "is_demo": is_demo
     })
 
-
-@router.get("/sections/{section_id}", response_class=HTMLResponse)
+@router.get("/restaurants/{restaurant_id}/sections/{section_id}", response_class=HTMLResponse)
 async def section_detail(
     request: Request,
+    restaurant_id: int,
     section_id: int,
     db: Session = Depends(get_db)
 ) -> Any:
     """Детальная страница раздела"""
     current_user = get_current_user_from_cookies(request, db)
-    
-    # Проверяем доступ к разделу
-    check_section_access(current_user, section_id, db)
-    
     section = get_section(db, section_id)
-    if not section:
-        raise HTTPException(status_code=404, detail="Section not found")
-    
+    if section is None or int(getattr(section, 'restaurant_id', -1)) != int(restaurant_id):
+        raise HTTPException(status_code=404, detail="Section not found or does not belong to restaurant")
+    check_restaurant_access(current_user, restaurant_id, db)
     categories = get_categories_by_section(db, section_id)
-    
-    # Проверяем, является ли это демо-разделом
+    for cat in categories:
+        cat_id = getattr(cat, 'id', None)
+        if isinstance(cat_id, int):
+            cat.first_product = get_first_product_by_category(db, cat_id)
+        else:
+            cat.first_product = None
     demo_restaurant_id = get_demo_restaurant_id(db)
-    is_demo = demo_restaurant_id and section.restaurant_id == demo_restaurant_id  # type: ignore
-    
+    is_demo = demo_restaurant_id and restaurant_id == demo_restaurant_id
     return templates.TemplateResponse("section_detail.html", {
         "request": request,
         "user": current_user,
@@ -303,29 +299,23 @@ async def section_detail(
         "is_demo": is_demo
     })
 
-
-@router.get("/categories/{category_id}", response_class=HTMLResponse)
+@router.get("/restaurants/{restaurant_id}/sections/{section_id}/categories/{category_id}", response_class=HTMLResponse)
 async def category_detail(
     request: Request,
+    restaurant_id: int,
+    section_id: int,
     category_id: int,
     db: Session = Depends(get_db)
 ) -> Any:
     """Детальная страница категории"""
     current_user = get_current_user_from_cookies(request, db)
-    
-    # Проверяем доступ к категории
-    check_category_access(current_user, category_id, db)
-    
     category = get_category(db, category_id)
-    if not category:
-        raise HTTPException(status_code=404, detail="Category not found")
-    
+    if category is None or int(getattr(category, 'section_id', -1)) != int(section_id) or int(getattr(category, 'restaurant_id', -1)) != int(restaurant_id):
+        raise HTTPException(status_code=404, detail="Category not found or does not belong to section/restaurant")
+    check_restaurant_access(current_user, restaurant_id, db)
     products = get_products_by_category(db, category_id)
-    
-    # Проверяем, является ли это демо-категорией
     demo_restaurant_id = get_demo_restaurant_id(db)
-    is_demo = demo_restaurant_id and category.restaurant_id == demo_restaurant_id  # type: ignore
-    
+    is_demo = demo_restaurant_id and restaurant_id == demo_restaurant_id
     return templates.TemplateResponse("category_detail.html", {
         "request": request,
         "user": current_user,
@@ -334,27 +324,30 @@ async def category_detail(
         "is_demo": is_demo
     })
 
-
-@router.get("/products/{product_id}", response_class=HTMLResponse)
+@router.get("/restaurants/{restaurant_id}/sections/{section_id}/categories/{category_id}/products/{product_id}", response_class=HTMLResponse)
 async def product_detail(
     request: Request,
+    restaurant_id: int,
+    section_id: int,
+    category_id: int,
     product_id: int,
     db: Session = Depends(get_db)
 ) -> Any:
     """Детальная страница продукта"""
     current_user = get_current_user_from_cookies(request, db)
-    
-    # Проверяем доступ к продукту
-    check_product_access(current_user, product_id, db)
-    
     product = get_product(db, product_id)
-    if not product:
-        raise HTTPException(status_code=404, detail="Product not found")
-    
-    # Проверяем, является ли это демо-продуктом
+    if product is None or int(getattr(product, 'category_id', -1)) != int(category_id) or int(getattr(product, 'restaurant_id', -1)) != int(restaurant_id):
+        raise HTTPException(status_code=404, detail="Product not found or does not belong to category/restaurant")
+    # Проверяем, что категория и секция тоже соответствуют
+    category = get_category(db, category_id)
+    if category is None or int(getattr(category, 'section_id', -1)) != int(section_id) or int(getattr(category, 'restaurant_id', -1)) != int(restaurant_id):
+        raise HTTPException(status_code=404, detail="Category not found or does not belong to section/restaurant")
+    section = get_section(db, section_id)
+    if section is None or int(getattr(section, 'restaurant_id', -1)) != int(restaurant_id):
+        raise HTTPException(status_code=404, detail="Section not found or does not belong to restaurant")
+    check_restaurant_access(current_user, restaurant_id, db)
     demo_restaurant_id = get_demo_restaurant_id(db)
-    is_demo = demo_restaurant_id and product.restaurant_id == demo_restaurant_id  # type: ignore
-    
+    is_demo = demo_restaurant_id and restaurant_id == demo_restaurant_id
     return templates.TemplateResponse("product_detail.html", {
         "request": request,
         "user": current_user,
@@ -398,8 +391,7 @@ async def recent_changes(
 
 
 # === УПРАВЛЕНИЕ РАЗДЕЛАМИ ===
-
-@router.get("/manage/sections/create/{restaurant_id}", response_class=HTMLResponse)
+@router.get("/restaurants/{restaurant_id}/manage/sections/create", response_class=HTMLResponse)
 async def create_section_page(
     request: Request,
     restaurant_id: int,
@@ -423,7 +415,7 @@ async def create_section_page(
     })
 
 
-@router.post("/manage/sections/create/{restaurant_id}", response_class=HTMLResponse)
+@router.post("/restaurants/{restaurant_id}/manage/sections/create", response_class=HTMLResponse)
 async def create_section_post(
     request: Request,
     restaurant_id: int,
@@ -445,12 +437,12 @@ async def create_section_post(
     )
     
     new_section = create_section(db, section_data)
-    return RedirectResponse(url=f"/manage/categories/create/{new_section.id}", status_code=302)
+    return RedirectResponse(url=f"/restaurants/{restaurant_id}", status_code=302)
 
-
-@router.get("/manage/sections/edit/{section_id}", response_class=HTMLResponse)
+@router.get("/restaurants/{restaurant_id}/sections/{section_id}/manage/edit", response_class=HTMLResponse)
 async def edit_section_page(
     request: Request,
+    restaurant_id: int,
     section_id: int,
     db: Session = Depends(get_db)
 ) -> Any:
@@ -472,9 +464,10 @@ async def edit_section_page(
     })
 
 
-@router.post("/manage/sections/edit/{section_id}", response_class=HTMLResponse)
+@router.post("/restaurants/{restaurant_id}/sections/{section_id}/manage/edit", response_class=HTMLResponse)
 async def edit_section_post(
     request: Request,
+    restaurant_id: int,
     section_id: int,
     name: str = Form(...),
     description: str = Form(""),
@@ -494,12 +487,13 @@ async def edit_section_post(
     section_update = SectionUpdate(name=name, description=description)
     update_section(db, section_id, section_update)
     
-    return RedirectResponse(url=f"/sections/{section_id}", status_code=302)
+    return RedirectResponse(url=f"/restaurants/{restaurant_id}/sections/{section_id}", status_code=302)
 
 
-@router.post("/manage/sections/delete/{section_id}", response_class=HTMLResponse)
+@router.post("/restaurants/{restaurant_id}/sections/{section_id}/manage/delete", response_class=HTMLResponse)
 async def delete_section_post(
     request: Request,
+    restaurant_id: int,
     section_id: int,
     db: Session = Depends(get_db)
 ) -> Any:
@@ -514,17 +508,17 @@ async def delete_section_post(
     if not section:
         raise HTTPException(status_code=404, detail="Section not found")
     
-    restaurant_id = section.restaurant_id
+    restaurant_id = int(getattr(section, 'restaurant_id', -1))
     delete_section(db, section_id)
     
     return RedirectResponse(url=f"/restaurants/{restaurant_id}", status_code=302)
 
 
 # === УПРАВЛЕНИЕ КАТЕГОРИЯМИ ===
-
-@router.get("/manage/categories/create/{section_id}", response_class=HTMLResponse)
+@router.get("/restaurants/{restaurant_id}/sections/{section_id}/manage/categories/create", response_class=HTMLResponse)
 async def create_category_page(
     request: Request,
+    restaurant_id: int,
     section_id: int,
     db: Session = Depends(get_db)
 ) -> Any:
@@ -546,9 +540,10 @@ async def create_category_page(
     })
 
 
-@router.post("/manage/categories/create/{section_id}", response_class=HTMLResponse)
+@router.post("/restaurants/{restaurant_id}/sections/{section_id}/manage/categories/create", response_class=HTMLResponse)
 async def create_category_post(
     request: Request,
+    restaurant_id: int,
     section_id: int,
     title: str = Form(...),
     description: str = Form(""),
@@ -573,12 +568,13 @@ async def create_category_post(
     )
     
     new_category = create_category(db, category_data)
-    return RedirectResponse(url=f"/manage/products/create/{new_category.id}", status_code=302)
+    return RedirectResponse(url=f"/restaurants/{restaurant_id}/sections/{section_id}", status_code=302)
 
-
-@router.get("/manage/categories/edit/{category_id}", response_class=HTMLResponse)
+@router.get("/restaurants/{restaurant_id}/sections/{section_id}/categories/{category_id}/manage/edit", response_class=HTMLResponse)
 async def edit_category_page(
     request: Request,
+    restaurant_id: int,
+    section_id: int,
     category_id: int,
     db: Session = Depends(get_db)
 ) -> Any:
@@ -600,9 +596,11 @@ async def edit_category_page(
     })
 
 
-@router.post("/manage/categories/edit/{category_id}", response_class=HTMLResponse)
+@router.post("/restaurants/{restaurant_id}/sections/{section_id}/categories/{category_id}/manage/edit", response_class=HTMLResponse)
 async def edit_category_post(
     request: Request,
+    restaurant_id: int,
+    section_id: int,
     category_id: int,
     title: str = Form(...),
     description: str = Form(""),
@@ -622,12 +620,14 @@ async def edit_category_post(
     category_update = CategoryUpdate(title=title, description=description)
     update_category(db, category_id, category_update)
     
-    return RedirectResponse(url=f"/categories/{category_id}", status_code=302)
+    return RedirectResponse(url=f"/restaurants/{restaurant_id}/sections/{section_id}/categories/{category_id}", status_code=302)
 
 
-@router.post("/manage/categories/delete/{category_id}", response_class=HTMLResponse)
+@router.post("/restaurants/{restaurant_id}/sections/{section_id}/categories/{category_id}/manage/delete", response_class=HTMLResponse)
 async def delete_category_post(
     request: Request,
+    restaurant_id: int,
+    section_id: int,
     category_id: int,
     db: Session = Depends(get_db)
 ) -> Any:
@@ -642,17 +642,18 @@ async def delete_category_post(
     if not category:
         raise HTTPException(status_code=404, detail="Category not found")
     
-    section_id = category.section_id
+    section_id = int(getattr(category, 'section_id', -1))
     delete_category(db, category_id)
     
-    return RedirectResponse(url=f"/sections/{section_id}", status_code=302)
+    return RedirectResponse(url=f"/restaurants/{restaurant_id}/sections/{section_id}", status_code=302)
 
 
 # === УПРАВЛЕНИЕ ПРОДУКТАМИ ===
-
-@router.get("/manage/products/create/{category_id}", response_class=HTMLResponse)
+@router.get("/restaurants/{restaurant_id}/sections/{section_id}/categories/{category_id}/manage/products/create", response_class=HTMLResponse)
 async def create_product_page(
     request: Request,
+    restaurant_id: int,
+    section_id: int,
     category_id: int,
     db: Session = Depends(get_db)
 ) -> Any:
@@ -678,9 +679,11 @@ async def create_product_page(
     })
 
 
-@router.post("/manage/products/create/{category_id}", response_class=HTMLResponse)
+@router.post("/restaurants/{restaurant_id}/sections/{section_id}/categories/{category_id}/manage/products/create", response_class=HTMLResponse)
 async def create_product_post(
     request: Request,
+    restaurant_id: int,
+    section_id: int,
     category_id: int,
     title: str = Form(...),
     weight: str = Form(""),
@@ -718,12 +721,14 @@ async def create_product_post(
     
     create_product(db, product_data)
     # Перенаправляем обратно на страницу создания блюда с сообщением об успехе
-    return RedirectResponse(url=f"/manage/products/create/{category_id}?success=true", status_code=302)
+    return RedirectResponse(url=f"/restaurants/{restaurant_id}/sections/{section_id}/categories/{category_id}?success=true", status_code=302)
 
-
-@router.get("/manage/products/edit/{product_id}", response_class=HTMLResponse)
+@router.get("/restaurants/{restaurant_id}/sections/{section_id}/categories/{category_id}/products/{product_id}/manage/edit", response_class=HTMLResponse)
 async def edit_product_page(
     request: Request,
+    restaurant_id: int,
+    section_id: int,
+    category_id: int,
     product_id: int,
     db: Session = Depends(get_db)
 ) -> Any:
@@ -745,9 +750,12 @@ async def edit_product_page(
     })
 
 
-@router.post("/manage/products/edit/{product_id}", response_class=HTMLResponse)
+@router.post("/restaurants/{restaurant_id}/sections/{section_id}/categories/{category_id}/products/{product_id}/manage/edit", response_class=HTMLResponse)
 async def edit_product_post(
     request: Request,
+    restaurant_id: int,
+    section_id: int,
+    category_id: int,
     product_id: int,
     title: str = Form(...),
     weight: str = Form(""),
@@ -782,12 +790,15 @@ async def edit_product_post(
     )
     
     update_product(db, product_id, product_update)
-    return RedirectResponse(url=f"/products/{product_id}", status_code=302)
+    return RedirectResponse(url=f"/restaurants/{restaurant_id}/sections/{section_id}/categories/{category_id}/products/{product_id}", status_code=302)
 
 
-@router.post("/manage/products/delete/{product_id}", response_class=HTMLResponse)
+@router.post("/restaurants/{restaurant_id}/sections/{section_id}/categories/{category_id}/products/{product_id}/manage/delete", response_class=HTMLResponse)
 async def delete_product_post(
     request: Request,
+    restaurant_id: int,
+    section_id: int,
+    category_id: int,
     product_id: int,
     db: Session = Depends(get_db)
 ) -> Any:
@@ -802,10 +813,10 @@ async def delete_product_post(
     if not product:
         raise HTTPException(status_code=404, detail="Product not found")
     
-    category_id = product.category_id
+    category_id = int(getattr(product, 'category_id', -1))
     delete_product(db, product_id)
     
-    return RedirectResponse(url=f"/categories/{category_id}", status_code=302)
+    return RedirectResponse(url=f"/restaurants/{restaurant_id}/sections/{section_id}/categories/{category_id}", status_code=302)
 
 
 # === УПРАВЛЕНИЕ РЕСТОРАНАМИ ===
@@ -856,3 +867,162 @@ async def create_restaurant_post(
     
     create_restaurant(db, restaurant_data)
     return RedirectResponse(url="/restaurants", status_code=302)
+
+@router.get("/restaurants/{restaurant_id}/manage/edit", response_class=HTMLResponse)
+async def edit_restaurant_page(
+    request: Request,
+    restaurant_id: int,
+    db: Session = Depends(get_db)
+) -> Any:
+    current_user = get_current_user_from_cookies(request, db)
+    check_manager_access(current_user)
+    check_restaurant_access(current_user, restaurant_id, db)
+    restaurant = get_restaurant(db, restaurant_id)
+    if not restaurant:
+        raise HTTPException(status_code=404, detail="Restaurant not found")
+    return templates.TemplateResponse("manage/edit_restaurant.html", {
+        "request": request,
+        "user": current_user,
+        "restaurant": restaurant
+    })
+
+@router.get("/manage/restaurants/edit/{restaurant_id}")
+async def legacy_edit_restaurant_redirect(restaurant_id: int):
+    return RedirectResponse(url=f"/restaurants/{restaurant_id}/manage/edit", status_code=302)
+
+@router.post("/restaurants/{restaurant_id}/manage/edit", response_class=HTMLResponse)
+async def edit_restaurant_modal(
+    request: Request,
+    restaurant_id: int,
+    name: str = Form(...),
+    concept: str = Form(""),
+    db: Session = Depends(get_db)
+) -> Any:
+    current_user = get_current_user_from_cookies(request, db)
+    check_manager_access(current_user)
+    check_restaurant_access(current_user, restaurant_id, db)
+    restaurant = get_restaurant(db, restaurant_id)
+    if not restaurant:
+        raise HTTPException(status_code=404, detail="Restaurant not found")
+    update_data = RestaurantCreate(name=name, concept=concept if concept else None)
+    # Обновляем только name и concept
+    setattr(restaurant, 'name', name)
+    setattr(restaurant, 'concept', concept if concept else None)
+    db.commit()
+    db.refresh(restaurant)
+    # После сохранения возвращаемся на detail ресторана
+    return RedirectResponse(url=f"/restaurants/{restaurant_id}", status_code=302)
+
+# --- REDIRECTS FROM OLD MANAGE ROUTES TO NEW NESTED ROUTES ---
+@router.get("/manage/products/edit/{product_id}")
+async def legacy_edit_product_redirect(product_id: int, db: Session = Depends(get_db)):
+    product = get_product(db, product_id)
+    if not product:
+        raise HTTPException(status_code=404, detail="Product not found")
+    category_id = int(getattr(product, 'category_id', -1))
+    category = get_category(db, category_id)
+    if not category:
+        raise HTTPException(status_code=404, detail="Category not found")
+    section_id = int(getattr(category, 'section_id', -1))
+    section = get_section(db, section_id)
+    if not section:
+        raise HTTPException(status_code=404, detail="Section not found")
+    restaurant_id = int(getattr(product, 'restaurant_id', -1))
+    return RedirectResponse(url=f"/restaurants/{restaurant_id}/sections/{section.id}/categories/{category.id}/products/{product.id}/manage/edit", status_code=302)
+
+@router.get("/manage/products/create/{category_id}")
+async def legacy_create_product_redirect(category_id: int, db: Session = Depends(get_db)):
+    category = get_category(db, category_id)
+    if not category:
+        raise HTTPException(status_code=404, detail="Category not found")
+    section_id = int(getattr(category, 'section_id', -1))
+    section = get_section(db, section_id)
+    if not section:
+        raise HTTPException(status_code=404, detail="Section not found")
+    restaurant_id = int(getattr(category, 'restaurant_id', -1))
+    return RedirectResponse(url=f"/restaurants/{restaurant_id}/sections/{section.id}/categories/{category.id}/manage/products/create", status_code=302)
+
+@router.post("/manage/products/delete/{product_id}")
+async def legacy_delete_product_redirect(product_id: int, db: Session = Depends(get_db)):
+    product = get_product(db, product_id)
+    if not product:
+        raise HTTPException(status_code=404, detail="Product not found")
+    category_id = int(getattr(product, 'category_id', -1))
+    category = get_category(db, category_id)
+    if not category:
+        raise HTTPException(status_code=404, detail="Category not found")
+    section_id = int(getattr(category, 'section_id', -1))
+    section = get_section(db, section_id)
+    if not section:
+        raise HTTPException(status_code=404, detail="Section not found")
+    restaurant_id = int(getattr(product, 'restaurant_id', -1))
+    return RedirectResponse(url=f"/restaurants/{restaurant_id}/sections/{section.id}/categories/{category.id}/products/{product.id}/manage/delete", status_code=307)
+
+# Аналогично для категорий и секций (edit/create/delete)
+@router.get("/manage/categories/edit/{category_id}")
+async def legacy_edit_category_redirect(category_id: int, db: Session = Depends(get_db)):
+    category = get_category(db, category_id)
+    if not category:
+        raise HTTPException(status_code=404, detail="Category not found")
+    section_id = int(getattr(category, 'section_id', -1))
+    section = get_section(db, section_id)
+    if not section:
+        raise HTTPException(status_code=404, detail="Section not found")
+    restaurant_id = int(getattr(category, 'restaurant_id', -1))
+    return RedirectResponse(url=f"/restaurants/{restaurant_id}/sections/{section.id}/categories/{category.id}/manage/edit", status_code=302)
+
+@router.get("/manage/categories/create/{section_id}")
+async def legacy_create_category_redirect(section_id: int, db: Session = Depends(get_db)):
+    section = get_section(db, section_id)
+    if not section:
+        raise HTTPException(status_code=404, detail="Section not found")
+    restaurant_id = int(getattr(section, 'restaurant_id', -1))
+    return RedirectResponse(url=f"/restaurants/{restaurant_id}/sections/{section.id}/manage/categories/create", status_code=302)
+
+@router.post("/manage/categories/delete/{category_id}")
+async def legacy_delete_category_redirect(category_id: int, db: Session = Depends(get_db)):
+    category = get_category(db, category_id)
+    if not category:
+        raise HTTPException(status_code=404, detail="Category not found")
+    section_id = int(getattr(category, 'section_id', -1))
+    section = get_section(db, section_id)
+    if not section:
+        raise HTTPException(status_code=404, detail="Section not found")
+    restaurant_id = int(getattr(category, 'restaurant_id', -1))
+    return RedirectResponse(url=f"/restaurants/{restaurant_id}/sections/{section.id}/categories/{category.id}/manage/delete", status_code=307)
+
+@router.get("/manage/sections/edit/{section_id}")
+async def legacy_edit_section_redirect(section_id: int, db: Session = Depends(get_db)):
+    section = get_section(db, section_id)
+    if not section:
+        raise HTTPException(status_code=404, detail="Section not found")
+    restaurant_id = int(getattr(section, 'restaurant_id', -1))
+    return RedirectResponse(url=f"/restaurants/{restaurant_id}/sections/{section.id}/manage/edit", status_code=302)
+
+@router.get("/manage/sections/create/{restaurant_id}")
+async def legacy_create_section_redirect(restaurant_id: int):
+    return RedirectResponse(url=f"/restaurants/{restaurant_id}/manage/sections/create", status_code=302)
+
+@router.post("/manage/sections/delete/{section_id}")
+async def legacy_delete_section_redirect(section_id: int, db: Session = Depends(get_db)):
+    section = get_section(db, section_id)
+    if not section:
+        raise HTTPException(status_code=404, detail="Section not found")
+    restaurant_id = int(getattr(section, 'restaurant_id', -1))
+    return RedirectResponse(url=f"/restaurants/{restaurant_id}/sections/{section.id}/manage/delete", status_code=307)
+
+async def custom_http_exception_handler(request: Request, exc: HTTPException):
+    code = exc.status_code
+    if code == 401:
+        message = "Требуется авторизация для доступа к этой странице."
+    elif code == 403:
+        message = "У вас нет прав для доступа к этой странице."
+    elif code == 404:
+        message = "Страница не найдена или не существует."
+    else:
+        message = exc.detail or "Произошла неизвестная ошибка."
+    return templates.TemplateResponse(
+        "error.html",
+        {"request": request, "error_code": code, "error_message": message},
+        status_code=code
+    )

@@ -3,6 +3,11 @@
 {% block title %}Создать категорию - {{ section.name }}{% endblock %}
 
 {% block content %}
+{% set breadcrumbs %}
+    <li class="breadcrumb-item"><a href="/restaurants/{{ section.restaurant.id }}">{{ section.restaurant.name }}</a></li>
+    <li class="breadcrumb-item"><a href="/restaurants/{{ section.restaurant.id }}/sections/{{ section.id }}">{{ section.name }}</a></li>
+    <li class="breadcrumb-item active" aria-current="page"><span>➕ Создать категорию</span></li>
+{% endset %}
 <div class="container mt-4">
     <nav aria-label="breadcrumb">
         <ol class="breadcrumb">
@@ -10,9 +15,7 @@
             {% if user and user.role == 'admin' %}
             <li class="breadcrumb-item"><a href="/restaurants">Рестораны</a></li>
             {% endif %}
-            <li class="breadcrumb-item"><a href="/restaurants/{{ section.restaurant.id }}">{{ section.restaurant.name }}</a></li>
-            <li class="breadcrumb-item"><a href="/sections/{{ section.id }}">{{ section.name }}</a></li>
-            <li class="breadcrumb-item active" aria-current="page"><span>➕ Создать категорию</span></li>
+            {{ breadcrumbs }}
         </ol>
     </nav>
 
@@ -45,7 +48,7 @@
                         
                         <div class="d-flex gap-2">
                             <button type="submit" class="btn btn-primary">Создать категорию</button>
-                            <a href="/sections/{{ section.id }}" class="btn btn-secondary">Отмена</a>
+                            <a href="/restaurants/{{ section.restaurant.id }}/sections/{{ section.id }}" class="btn btn-secondary">Отмена</a>
                             <a href="/restaurants/{{ section.restaurant.id }}" class="btn btn-outline-secondary">К разделам</a>
                         </div>
                     </form>
@@ -55,7 +58,7 @@
     </div>
     
     <div class="back-button-container">
-        <a href="/sections/{{ section.id }}" class="btn-back">← Назад к разделу</a>
+        <a href="/restaurants/{{ section.restaurant.id }}/sections/{{ section.id }}" class="btn-back">← Назад к разделу</a>
     </div>
 </div>
 {% endblock %} 

@@ -2,7 +2,7 @@
 
 {% block title %}{{ restaurant.name }}{% if is_demo %} - Демо{% endif %}{% endblock %}
 
-{% block breadcrumb_items %}
+{% set breadcrumbs %}
     {% if is_demo %}
     <li class="breadcrumb-item active" aria-current="page"><span>{{ restaurant.name }} (Демо)</span></li>
     {% else %}
@@ -11,9 +11,13 @@
     {% endif %}
     <li class="breadcrumb-item active" aria-current="page"><span>{{ restaurant.name }}</span></li>
     {% endif %}
-{% endblock %}
+{% endset %}
 
 {% block content %}
+    <style>
+    .modal-backdrop.show { z-index: 1050; }
+    .modal.show { z-index: 1060; }
+    </style>
     {% if is_demo %}
     <div class="alert alert-info">
         <strong>Демо-версия TastySkills</strong> - это пример того, как выглядит система управления меню для официантов.
@@ -24,9 +28,12 @@
     <div class="page-header-unified">
         <h1>{{ restaurant.name }}</h1>
         {% if user and user.role in ['admin', 'manager'] %}
-        <div class="management-buttons">
+        <div class="management-buttons d-flex gap-2">
             <a href="/manage/sections/create/{{ restaurant.id }}" class="btn btn-success btn-lg">
                 ➕ Создать раздел
+            </a>
+            <a href="/manage/restaurants/edit/{{ restaurant.id }}" class="btn btn-warning btn-lg">
+                ✏️ Редактировать ресторан
             </a>
         </div>
         {% endif %}
@@ -35,8 +42,8 @@
     {% if sections %}
     <div class="categories-list">
         {% for section in sections %}
-        <div class="section-card">
-            <div class="section-content" onclick="window.location.href='/sections/{{ section.id }}'">
+        <div class="section-card card">
+            <div class="section-content" onclick="window.location.href='/restaurants/{{ restaurant.id }}/sections/{{ section.id }}'">
                 <h5 class="card-title">
                     {{ section.name }}
                 </h5>
@@ -48,7 +55,7 @@
             <div class="section-actions">
                 <a href="/manage/sections/edit/{{ section.id }}" class="btn btn-outline-warning btn-sm">✏️</a>
                 <button type="button" class="btn btn-outline-danger btn-sm" 
-                        data-delete-url="/manage/sections/delete/{{ section.id }}"
+                        data-delete-url="/restaurants/{{ restaurant.id }}/sections/{{ section.id }}/manage/delete"
                         data-delete-message="Удалить раздел «{{ section.name }}»? Все категории и блюда в этом разделе также будут удалены.">
                     🗑️
                 </button>
@@ -78,18 +85,6 @@
             <a href="/" class="btn-back">← Назад на главную</a>
         {% endif %}
     </div>
-
-<script>
-// Предотвращение всплытия событий от кнопок управления
-document.addEventListener('DOMContentLoaded', function() {
-    const actionButtons = document.querySelectorAll('.section-actions .btn, .section-actions form');
-    actionButtons.forEach(button => {
-        button.addEventListener('click', function(e) {
-            e.stopPropagation();
-        });
-    });
-});
-</script>
 {% endblock %}
 
 {% block scripts %}
@@ -102,6 +97,16 @@ cards.forEach((card, i) => {
         card.style.transition = 'opacity 0.5s';
         card.style.opacity = 1;
     }, 100 + i * 150);
+});
+// Предотвращение всплытия событий от кнопок управления
+// (оставляем только для .section-actions, не трогаем модалки)
+document.addEventListener('DOMContentLoaded', function() {
+    const actionButtons = document.querySelectorAll('.section-actions .btn, .section-actions form');
+    actionButtons.forEach(button => {
+        button.addEventListener('click', function(e) {
+            e.stopPropagation();
+        });
+    });
 });
 </script>
 {% endblock %}

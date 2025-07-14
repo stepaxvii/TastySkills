@@ -817,13 +817,11 @@
 
 <div class="main-layout">
     <main class="main-content">
-        <!-- Хлебные крошки (только если есть breadcrumb_items) -->
-        {% block breadcrumb_items %}{% endblock %}
-        {% if self.breadcrumb_items() %}
+        {% if breadcrumbs %}
         <nav aria-label="breadcrumb" class="breadcrumb-container">
             <ol class="breadcrumb">
                 <li class="breadcrumb-item"><a href="/">Главная</a></li>
-                {{ self.breadcrumb_items() }}
+                {{ breadcrumbs|safe }}
             </ol>
         </nav>
         {% endif %}

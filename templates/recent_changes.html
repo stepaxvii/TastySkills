@@ -33,7 +33,7 @@
                             <p class="card-text small">{{ product.description[:100] }}...</p>
                             {% endif %}
                             <div class="mt-auto">
-                                <a href="/products/{{ product.id }}" class="btn btn-sm btn-outline-success w-100">Подробнее</a>
+                                <a href="/restaurants/{{ product.restaurant_id }}/sections/{{ product.category.section_id }}/categories/{{ product.category_id }}/products/{{ product.id }}" class="btn btn-sm btn-outline-success w-100">Подробнее</a>
                             </div>
                         </div>
                     </div>

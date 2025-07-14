@@ -2,20 +2,20 @@
 
 {% block title %}{{ category.title }} - {{ category.section.name }}{% if is_demo %} - Демо{% endif %}{% endblock %}
 
-{% block breadcrumb_items %}
+{% set breadcrumbs %}
     {% if is_demo %}
     <li class="breadcrumb-item"><a href="/demo">Демо-ресторан</a></li>
-    <li class="breadcrumb-item"><a href="/sections/{{ category.section.id }}">{{ category.section.name }}</a></li>
+    <li class="breadcrumb-item"><a href="/restaurants/{{ category.restaurant.id }}/sections/{{ category.section.id }}">{{ category.section.name }}</a></li>
     <li class="breadcrumb-item active" aria-current="page"><span>{{ category.title }}</span></li>
     {% else %}
     {% if user and user.role == 'admin' %}
     <li class="breadcrumb-item"><a href="/restaurants">Рестораны</a></li>
     {% endif %}
     <li class="breadcrumb-item"><a href="/restaurants/{{ category.restaurant.id }}">{{ category.restaurant.name }}</a></li>
-    <li class="breadcrumb-item"><a href="/sections/{{ category.section.id }}">{{ category.section.name }}</a></li>
+    <li class="breadcrumb-item"><a href="/restaurants/{{ category.restaurant.id }}/sections/{{ category.section.id }}">{{ category.section.name }}</a></li>
     <li class="breadcrumb-item active" aria-current="page"><span>{{ category.title }}</span></li>
     {% endif %}
-{% endblock %}
+{% endset %}
 
 {% block content %}
     <div class="page-header-unified">
@@ -33,10 +33,14 @@
     <div class="products-grid">
         {% for product in products %}
         <div class="product-card">
-            <div class="product-content" onclick="window.location.href='/products/{{ product.id }}'">
+            <div class="product-content" onclick="window.location.href='/restaurants/{{ category.restaurant.id }}/sections/{{ category.section.id }}/categories/{{ category.id }}/products/{{ product.id }}'">
                 <!-- Фото продукта -->
                 <div class="product-image">
-                    📸
+                    {% if product.photo_url %}
+                        <img src="{{ product.photo_url }}" alt="{{ product.title }}">
+                    {% else %}
+                        📸
+                    {% endif %}
                 </div>
                 <!-- Название продукта -->
                 <h5 class="product-title">
@@ -71,7 +75,7 @@
     {% endif %}
     
     <div class="back-button-container">
-        <a href="/sections/{{ category.section.id }}" class="btn-back">← Назад к разделу</a>
+        <a href="/restaurants/{{ category.restaurant.id }}/sections/{{ category.section.id }}" class="btn-back">← Назад к разделу</a>
     </div>
 {% endblock %}
 

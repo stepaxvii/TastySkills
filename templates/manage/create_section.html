@@ -3,6 +3,10 @@
 {% block title %}Создать раздел - {{ restaurant.name }}{% endblock %}
 
 {% block content %}
+{% set breadcrumbs %}
+    <li class="breadcrumb-item"><a href="/restaurants/{{ restaurant.id }}">{{ restaurant.name }}</a></li>
+    <li class="breadcrumb-item active" aria-current="page"><span>➕ Создать раздел</span></li>
+{% endset %}
 <div class="container mt-4">
     <nav aria-label="breadcrumb">
         <ol class="breadcrumb">
@@ -10,8 +14,7 @@
             {% if user and user.role == 'admin' %}
             <li class="breadcrumb-item"><a href="/restaurants">Рестораны</a></li>
             {% endif %}
-            <li class="breadcrumb-item"><a href="/restaurants/{{ restaurant.id }}">{{ restaurant.name }}</a></li>
-            <li class="breadcrumb-item active" aria-current="page"><span>➕ Создать раздел</span></li>
+            {{ breadcrumbs }}
         </ol>
     </nav>
 

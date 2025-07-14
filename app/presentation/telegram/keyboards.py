@@ -16,6 +16,7 @@ def get_manager_menu_keyboard() -> ReplyKeyboardMarkup:
     """Клавиатура меню менеджера"""
     keyboard = ReplyKeyboardMarkup(
         keyboard=[
+            [KeyboardButton(text="🍽️ Работа с меню")],
             [KeyboardButton(text="📋 Ссылка для регистрации")],
             [KeyboardButton(text="👥 Мои официанты")]
         ],

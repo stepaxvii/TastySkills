@@ -1,0 +1,21 @@
+{% extends "base.html" %}
+
+{% block title %}Редактировать ресторан{% endblock %}
+
+{% block content %}
+<div class="container mt-4">
+    <h2>Редактировать ресторан</h2>
+    <form method="post">
+        <div class="mb-3">
+            <label for="name" class="form-label">Название ресторана</label>
+            <input type="text" class="form-control" id="name" name="name" value="{{ restaurant.name }}" required>
+        </div>
+        <div class="mb-3">
+            <label for="concept" class="form-label">Концепция</label>
+            <textarea class="form-control" id="concept" name="concept">{{ restaurant.concept }}</textarea>
+        </div>
+        <button type="submit" class="btn btn-primary">Сохранить</button>
+        <a href="/restaurants/{{ restaurant.id }}" class="btn btn-secondary">Отмена</a>
+    </form>
+</div>
+{% endblock %} 

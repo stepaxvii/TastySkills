@@ -1,59 +1,67 @@
 <!-- Модальное окно подтверждения удаления -->
+<!-- ВАЖНО: Никогда не добавляйте класс 'show', style='display: block', aria-modal, role='dialog' или modal-backdrop вручную! Модалка должна открываться только через Bootstrap JS. -->
+<style>
+.modal-backdrop.show { z-index: 1050; }
+.modal.show { z-index: 1060; }
+</style>
 <div class="modal fade" id="deleteModal" tabindex="-1" aria-labelledby="deleteModalLabel" aria-hidden="true">
     <div class="modal-dialog modal-dialog-centered">
         <div class="modal-content">
-            <div class="modal-header bg-danger text-white">
-                <h5 class="modal-title" id="deleteModalLabel">
-                    <i class="fas fa-exclamation-triangle me-2"></i>
-                    Подтверждение удаления
-                </h5>
-                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
-            </div>
-            <div class="modal-body">
-                <div class="text-center mb-3">
-                    <div class="alert alert-warning border-0">
-                        <i class="fas fa-exclamation-triangle fa-2x text-warning mb-2 d-block"></i>
-                        <h6 class="alert-heading mb-2">Внимание!</h6>
-                        <p class="mb-0" id="deleteModalMessage">
-                            Вы действительно хотите удалить этот элемент?
+            <form id="deleteForm" method="post" style="display: block;">
+                <div class="modal-header bg-danger text-white">
+                    <h5 class="modal-title" id="deleteModalLabel">
+                        <i class="fas fa-exclamation-triangle me-2"></i>
+                        Подтверждение удаления
+                    </h5>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <div class="text-center mb-3">
+                        <div class="alert alert-warning border-0 mb-3">
+                            <i class="fas fa-exclamation-triangle fa-2x text-warning mb-2 d-block"></i>
+                            <h6 class="alert-heading mb-2">Внимание!</h6>
+                            <p class="mb-0" id="deleteModalMessage">Вы действительно хотите удалить этот элемент?</p>
+                        </div>
+                        <p class="text-muted small">
+                            <strong>Это действие нельзя отменить!</strong><br>
+                            Все связанные данные будут удалены безвозвратно.
                         </p>
                     </div>
-                    <p class="text-muted small">
-                        <strong>Это действие нельзя отменить!</strong><br>
-                        Все связанные данные будут удалены безвозвратно.
-                    </p>
                 </div>
-            </div>
-            <div class="modal-footer justify-content-center">
-                <button type="button" class="btn btn-secondary me-3" data-bs-dismiss="modal">
-                    <i class="fas fa-times me-1"></i>Отмена
-                </button>
-                <form id="deleteForm" method="post" style="display: inline;">
+                <div class="modal-footer justify-content-center">
+                    <button type="button" class="btn btn-secondary me-3" data-bs-dismiss="modal">
+                        <i class="fas fa-times me-1"></i>Отмена
+                    </button>
                     <button type="submit" class="btn btn-danger">
                         <i class="fas fa-trash me-1"></i>Удалить
                     </button>
-                </form>
-            </div>
+                </div>
+            </form>
         </div>
     </div>
 </div>
 
 <script>
+// Defensive: Remove stuck 'show' and 'display: block' from modal if present (prevents overlay bugs)
+document.addEventListener('DOMContentLoaded', function() {
+    var modal = document.getElementById('deleteModal');
+    if (modal) {
+        modal.classList.remove('show');
+        modal.style.display = '';
+    }
+});
 // Функция для показа модального окна удаления
 function showDeleteModal(message, actionUrl) {
     // Обновляем сообщение
     document.getElementById('deleteModalMessage').textContent = message;
-    
     // Обновляем форму
     const form = document.getElementById('deleteForm');
     form.action = actionUrl;
-    
-    // Показываем модальное окно
+    // Показываем модальное окно только через Bootstrap JS
     const modalElement = document.getElementById('deleteModal');
     const modal = new bootstrap.Modal(modalElement);
     modal.show();
 }
-
 // Функция для инициализации кнопок удаления
 function initDeleteButtons() {
     const deleteButtons = document.querySelectorAll('[data-delete-url]');
@@ -67,12 +75,10 @@ function initDeleteButtons() {
         });
     });
 }
-
 // Инициализируем кнопки при загрузке страницы
 document.addEventListener('DOMContentLoaded', function() {
     initDeleteButtons();
 });
-
 // Также инициализируем кнопки после динамической загрузки контента
 if (typeof window !== 'undefined') {
     window.initDeleteButtons = initDeleteButtons;

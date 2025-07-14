@@ -255,6 +255,9 @@ def delete_product(db: Session, product_id: int) -> Optional[Product]:
         db.commit()
     return db_product
 
+def get_first_product_by_category(db: Session, category_id: int):
+    return db.query(Product).filter(Product.category_id == category_id).order_by(Product.id.asc()).first()
+
 def authenticate_user(db: Session, username: str, password: str) -> Optional[User]:
     user = get_user_by_username(db, username)
     if not user:

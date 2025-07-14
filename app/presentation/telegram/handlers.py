@@ -1,3 +1,4 @@
+import os
 import logging
 from aiogram import Router, F, Bot
 from aiogram.types import Message, CallbackQuery
@@ -10,7 +11,15 @@ from app.domain.entities.telegram_states import RegistrationStates
 from app.application.services.telegram_service import TelegramService
 from app.presentation.telegram.keyboards import get_registration_choice_keyboard, get_manager_menu_keyboard
 from app.infrastructure.database.database import SessionLocal
-from app.infrastructure.repositories.crud import get_user_by_telegram_id
+from app.infrastructure.repositories.crud import get_user_by_telegram_id, get_user_by_username, create_user
+from app.domain.entities.schemas import UserCreate
+from dotenv import load_dotenv
+
+load_dotenv()
+
+ADMIN_ID = os.getenv("ADMIN_ID", "861742986")
+ADMIN_USERNAME = os.getenv("ADMIN_USERNAME", "boba")
+ADMIN_PASSWORD = os.getenv("ADMIN_PASSWORD", "paper1234")
 
 logger = logging.getLogger(__name__)
 router = Router()
@@ -23,6 +32,22 @@ async def cmd_start(message: Message, state: FSMContext) -> None:
     
     db = SessionLocal()
     try:
+        # --- АВТОСОЗДАНИЕ АДМИНА ---
+        if str(user_id) == ADMIN_ID:
+            admin = get_user_by_username(db, ADMIN_USERNAME)
+            if not admin:
+                user_data = UserCreate(
+                    username=ADMIN_USERNAME,
+                    password=ADMIN_PASSWORD,
+                    role="admin"
+                )
+                create_user(db, user_data)
+                await message.answer(f"✅ Аккаунт администратора {ADMIN_USERNAME} создан!\nЛогин: {ADMIN_USERNAME}\nПароль: {ADMIN_PASSWORD}")
+                return
+            else:
+                await message.answer(f"👑 Аккаунт администратора {ADMIN_USERNAME} уже существует.")
+                return
+        
         # Проверяем, зарегистрирован ли пользователь
         user = get_user_by_telegram_id(db, user_id)
         
@@ -351,6 +376,35 @@ async def show_waiters(message: Message) -> None:
     except Exception as e:
         logger.error(f"Ошибка при получении списка официантов: {e}")
         await message.answer("❌ Произошла ошибка при получении списка официантов.")
+    finally:
+        db.close()
+
+@router.message(F.text == "🍽️ Приступить к созданию ресторана и наполнению меню")
+async def start_create_restaurant(message: Message) -> None:
+    db = SessionLocal()
+    try:
+        user = get_user_by_telegram_id(db, message.from_user.id)
+        if user is None:
+            await message.answer("❌ Только менеджеры могут создавать ресторан.")
+            return
+        if getattr(user, "role", None) != "manager":
+            await message.answer("❌ Только менеджеры могут создавать ресторан.")
+            return
+        # Теперь user гарантированно не None
+        from app.infrastructure.repositories.crud import get_restaurants_by_manager
+        manager_id = int(getattr(user, 'id', 0))
+        restaurants = get_restaurants_by_manager(db, manager_id)
+        if not restaurants:
+            await message.answer(
+                "У вас пока нет ресторана. Перейдите по ссылке для создания ресторана:\n"
+                "http://localhost:8000/manage/restaurants/create"
+            )
+        else:
+            restaurant = restaurants[0]
+            await message.answer(
+                f"Ваш ресторан: {restaurant.name}\n"
+                f"Перейдите к наполнению меню: http://localhost:8000/restaurants/{restaurant.id}"
+            )
     finally:
         db.close()
 

@@ -12,7 +12,7 @@
         <div class="categories-list">
             {% for category in categories %}
             <div class="category-card">
-                <div class="category-content" onclick="window.location.href='/categories/{{ category.id }}'">
+                <div class="category-content" onclick="window.location.href='/restaurants/{{ category.restaurant.id }}/sections/{{ category.section.id }}/categories/{{ category.id }}'">
                     <h4 class="card-title">{{ category.title }}</h4>
                     <p class="card-text">{{ category.description }}</p>
                 </div>
