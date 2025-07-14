@@ -120,7 +120,6 @@ class TelegramService:
         if role == "waiter" and manager_id:
             user.manager_id = manager_id  # type: ignore
             
-            # Отмечаем приглашение как использованное (только для старой системы)
             if invitation_id:
                 invitation = db.query(Invitation).filter(Invitation.id == invitation_id).first()
                 if invitation:

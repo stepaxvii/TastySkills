@@ -5,4 +5,5 @@ class RegistrationStates(StatesGroup):
     waiting_for_registration_choice = State()
     waiting_for_invitation = State()
     waiting_for_username = State()
-    waiting_for_password = State() 
+    waiting_for_password = State()
+    waiting_for_new_password = State() 

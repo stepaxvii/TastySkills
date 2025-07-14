@@ -63,7 +63,7 @@ async def cmd_start(message: Message, state: FSMContext) -> None:
                     f"👋 Добро пожаловать, {user.telegram_first_name or user.username}!\n\n"
                     f"👑 Роль: Менеджер\n"
                     f"🔗 Веб-интерфейс: http://...\n\n"
-                    f"Используйте кнопки ниже для управления официантами:",
+                    f"Используйте кнопки ниже для управления:",
                     reply_markup=get_manager_menu_keyboard()
                 )
             else:  # waiter
@@ -98,7 +98,7 @@ async def cmd_start(message: Message, state: FSMContext) -> None:
                         f"✅ Приглашение принято!\n"
                         f"Менеджер: {invitation_data['manager_username']}\n"
                         f"Вы будете зарегистрированы как официант.\n\n"
-                        f"Введите логин для входа в систему:"
+                        f"Введите логин для входа в систему:\n(разрешены только латинские буквы, цифры и символы)"
                     )
                 else:  # invitation
                     # Сохраняем данные приглашения и начинаем регистрацию официанта
@@ -112,7 +112,7 @@ async def cmd_start(message: Message, state: FSMContext) -> None:
                         f"👤 Регистрация по приглашению\n\n"
                         f"✅ Код приглашения принят!\n"
                         f"Вы будете зарегистрированы как официант.\n\n"
-                        f"Введите логин для входа в систему:"
+                        f"Введите логин для входа в систему:\n(разрешены только латинские буквы, цифры и символы)"
                     )
             else:
                 await message.answer(
@@ -148,7 +148,7 @@ async def process_registration_choice(callback_query: CallbackQuery, state: FSMC
         if callback_query.message:
             await callback_query.message.answer(
                 "👑 Регистрация менеджера\n\n"
-                "Введите логин для входа в систему:"
+                "Введите логин для входа в систему:\n(разрешены только латинские буквы, цифры и символы)"
             )
     else:  # register_invitation
         await state.update_data(registration_type="waiter")
@@ -183,7 +183,7 @@ async def process_invitation(message: Message, state: FSMContext) -> None:
             await state.set_state(RegistrationStates.waiting_for_username)
             await message.answer(
                 "✅ Код приглашения принят!\n\n"
-                "Введите логин для входа в систему:"
+                "Введите логин для входа в систему:\n(разрешены только латинские буквы, цифры и символы)"
             )
         else:
             await message.answer(
@@ -412,13 +412,80 @@ async def start_create_restaurant(message: Message) -> None:
 @router.message(Command("help"))
 async def cmd_help(message: Message) -> None:
     """Обработчик команды /help"""
-    await message.answer(
-        "🤖 TastySkills\n\n"
-        "Доступные команды:\n"
-        "/start - Начать регистрацию\n"
-        "/help - Показать эту справку\n\n"
-        "После регистрации используйте веб-интерфейс для работы с меню."
-    )
+    db = SessionLocal()
+    try:
+        user = None
+        if message.from_user:
+            user = get_user_by_telegram_id(db, message.from_user.id)
+        if user:
+            await message.answer(
+                f"🤖 TastySkills\n\n"
+                f"Ваши данные для входа в систему:\n"
+                f"👤 Логин: {user.username}\n"
+                f"🔑 Пароль: (выбранный при регистрации или сброшенный)\n\n"
+                f"Если вы забыли пароль, используйте команду /reset_password для его сброса.\n\n"
+                f"Доступные команды:\n"
+                f"/start - Начать регистрацию\n"
+                f"/help - Показать эту справку\n"
+                f"/reset_password - Сбросить пароль\n\n"
+                f"После регистрации используйте веб-интерфейс для работы с меню."
+            )
+        else:
+            await message.answer(
+                "🤖 TastySkills\n\n"
+                "Доступные команды:\n"
+                "/start - Начать регистрацию\n"
+                "/help - Показать эту справку\n"
+                "/reset_password - Сбросить пароль\n\n"
+                "После регистрации используйте веб-интерфейс для работы с меню."
+            )
+    finally:
+        db.close()
+
+@router.message(Command("reset_password"))
+async def cmd_reset_password(message: Message, state: FSMContext) -> None:
+    """Обработчик команды /reset_password"""
+    db = SessionLocal()
+    try:
+        user = None
+        if message.from_user:
+            user = get_user_by_telegram_id(db, message.from_user.id)
+        if not user:
+            await message.answer("❌ Вы не зарегистрированы в системе. Используйте /start для регистрации.")
+            return
+        await state.set_state(RegistrationStates.waiting_for_new_password)
+        await message.answer(
+            "Введите новый пароль для входа в систему:\n(минимум 6 символов)"
+        )
+    finally:
+        db.close()
+
+@router.message(RegistrationStates.waiting_for_new_password)
+async def process_new_password(message: Message, state: FSMContext) -> None:
+    """Обработка нового пароля для сброса"""
+    new_password = message.text if message.text else ""
+    is_valid, error_msg = TelegramService.validate_password(new_password)
+    if not is_valid:
+        await message.answer(f"❌ {error_msg}\nПопробуйте еще раз:")
+        return
+    user_data = await state.get_data()
+    db = SessionLocal()
+    try:
+        user = None
+        if message.from_user:
+            user = get_user_by_telegram_id(db, message.from_user.id)
+        if not user:
+            await message.answer("❌ Пользователь не найден. Попробуйте снова или зарегистрируйтесь.")
+            await state.clear()
+            return
+        # Обновляем пароль пользователя
+        from app.presentation.api.auth import get_password_hash
+        user.hashed_password = get_password_hash(new_password)
+        db.commit()
+        await message.answer("✅ Пароль успешно изменён! Теперь вы можете использовать новый пароль для входа в систему через веб-интерфейс.")
+        await state.clear()
+    finally:
+        db.close()
 
 @router.message()
 async def echo_message(message: Message) -> None:
