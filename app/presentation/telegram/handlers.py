@@ -26,7 +26,7 @@ router = Router()
 
 @router.message(Command("start"))
 async def cmd_start(message: Message, state: FSMContext) -> None:
-    user_id = message.from_user.id
+    user_id = message.from_user.id # type: ignore
     
     db = SessionLocal()
     try:
@@ -40,7 +40,7 @@ async def cmd_start(message: Message, state: FSMContext) -> None:
                     role="admin"
                 )
                 create_user(db, user_data)
-                await message.answer(f"✅ Аккаунт администратора {ADMIN_USERNAME} создан!\nЛогин: {ADMIN_USERNAME}\nПароль: {ADMIN_PASSWORD}")
+                await message.answer(f"✅\nЛогин: {ADMIN_USERNAME}\nПароль: {ADMIN_PASSWORD}")
                 return
             else:
                 await message.answer(f"👑 Аккаунт администратора {ADMIN_USERNAME} уже существует.")
@@ -187,8 +187,8 @@ async def process_invitation(message: Message, state: FSMContext) -> None:
             )
         else:
             await message.answer(
-                "❌ Неверный код приглашения или приглашение уже использовано.\n"
-                "Попробуйте еще раз:"
+                "❌ Неверный код приглашения.\n"
+                "Попросите вашего менеджера выслать ссылку для приглашения."
             )
     except Exception as e:
         logger.error(f"Ошибка при обработке приглашения: {e}")
