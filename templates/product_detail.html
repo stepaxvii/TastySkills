@@ -27,13 +27,13 @@
 
     {% if user and user.role in ['admin', 'manager'] %}
     <div class="product-management">
-        <a href="/manage/products/edit/{{ product.id }}" class="btn btn-warning btn-lg" title="Редактировать блюдо">
+        <a href="/manage/products/edit/{{ product.id }}" class="btn btn-warning btn-lg" title="Редактировать продукт">
             ✏️
         </a>
         <button type="button" class="btn btn-danger btn-lg" 
                 data-delete-url="/manage/products/delete/{{ product.id }}"
-                data-delete-message="Удалить блюдо «{{ product.title }}»? Это действие нельзя отменить."
-                title="Удалить блюдо">
+                data-delete-message="Удалить продукт «{{ product.title }}»? Это действие нельзя отменить."
+                title="Удалить продукт">
             🗑️
         </button>
     </div>
@@ -91,7 +91,7 @@
 
     {% if product.features %}
     <div class="product-info-card">
-        <h4>✨ Особенности блюда</h4>
+        <h4>✨ Особенности продукта</h4>
         <p>{{ product.features }}</p>
     </div>
     {% endif %}

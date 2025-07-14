@@ -1,6 +1,6 @@
 {% extends "base.html" %}
 
-{% block title %}Редактировать блюдо - {{ product.title }}{% endblock %}
+{% block title %}Редактировать продукт - {{ product.title }}{% endblock %}
 
 {% set breadcrumbs %}
     <li class="breadcrumb-item"><a href="/restaurants/{{ product.restaurant.id }}">{{ product.restaurant.name }}</a></li>
@@ -16,7 +16,7 @@
         <div class="col-md-10">
             <div class="card">
                 <div class="card-header">
-                    <h3>Редактировать блюдо</h3>
+                    <h3>Редактировать продукт</h3>
                     <p class="text-muted mb-0">Категория: {{ product.category.title }} | Раздел: {{ product.category.section.name }} | Ресторан: {{ product.restaurant.name }}</p>
                 </div>
                 <div class="card-body">
@@ -30,15 +30,15 @@
                                 </div>
                                 {% endif %}
                                 <div class="mb-3">
-                                    <label for="image" class="form-label">Новое изображение блюда</label>
+                                    <label for="image" class="form-label">Новое изображение продукта</label>
                                     <input type="file" class="form-control" id="image" name="image" accept="image/*">
                                     <small class="form-text text-muted">Если не выбрано — останется текущее изображение.</small>
                                 </div>
                                 
                                 <div class="mb-3">
-                                    <label for="title" class="form-label">Название блюда *</label>
+                                    <label for="title" class="form-label">Название продукта *</label>
                                     <input type="text" class="form-control" id="title" name="title" required 
-                                           value="{{ product.title }}" placeholder="Название блюда">
+                                           value="{{ product.title }}" placeholder="Название продукта">
                                 </div>
                                 
                                 <div class="mb-3">
@@ -64,11 +64,11 @@
                                 <div class="mb-3">
                                     <label for="description" class="form-label">Процесс приготовления</label>
                                     <textarea class="form-control" id="description" name="description" rows="3"
-                                              placeholder="Краткое описание блюда">{{ product.description or '' }}</textarea>
+                                              placeholder="Краткое описание продукта">{{ product.description or '' }}</textarea>
                                 </div>
                                 
                                 <div class="mb-3">
-                                    <label for="features" class="form-label">Особенности блюда</label>
+                                    <label for="features" class="form-label">Особенности продукта</label>
                                     <textarea class="form-control" id="features" name="features" rows="3"
                                               placeholder="Интересные факты, особенности приготовления, что должен знать официант">{{ product.features or '' }}</textarea>
                                 </div>
@@ -76,13 +76,13 @@
                                 <div class="mb-3">
                                     <label for="table_setting" class="form-label">Подача</label>
                                     <textarea class="form-control" id="table_setting" name="table_setting" rows="2"
-                                              placeholder="Как подается блюдо">{{ product.table_setting or '' }}</textarea>
+                                              placeholder="Как подается продукт">{{ product.table_setting or '' }}</textarea>
                                 </div>
                                 
                                 <div class="mb-3">
                                     <label for="gastronomic_pairings" class="form-label">Гастрономические сочетания</label>
                                     <textarea class="form-control" id="gastronomic_pairings" name="gastronomic_pairings" rows="2"
-                                              placeholder="С чем сочетается блюдо">{{ product.gastronomic_pairings or '' }}</textarea>
+                                              placeholder="С чем сочетается продукт">{{ product.gastronomic_pairings or '' }}</textarea>
                                 </div>
                             </div>
                         </div>
@@ -98,7 +98,7 @@
     </div>
     
     <div class="back-button-container">
-        <a href="/restaurants/{{ product.restaurant.id }}/sections/{{ product.category.section.id }}/categories/{{ product.category.id }}/products/{{ product.id }}" class="btn-back">← Назад к блюду</a>
+        <a href="/restaurants/{{ product.restaurant.id }}/sections/{{ product.category.section.id }}/categories/{{ product.category.id }}/products/{{ product.id }}" class="btn-back">← Назад к продукту</a>
     </div>
 </div>
 {% endblock %} 

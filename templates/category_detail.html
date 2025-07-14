@@ -22,8 +22,8 @@
         <h1>{{ category.title }}</h1>
         {% if user and user.role in ['admin', 'manager'] %}
         <div class="management-buttons">
-            <a href="/manage/products/create/{{ category.id }}" class="btn btn-success btn-lg" title="Создать блюдо">
-                ➕ Создать блюдо
+            <a href="/manage/products/create/{{ category.id }}" class="btn btn-success btn-lg" title="Создать продукт">
+                ➕ Создать продукт
             </a>
         </div>
         {% endif %}
@@ -52,7 +52,7 @@
                 <a href="/manage/products/edit/{{ product.id }}" class="btn btn-outline-warning btn-sm">✏️</a>
                 <button type="button" class="btn btn-outline-danger btn-sm" 
                         data-delete-url="/manage/products/delete/{{ product.id }}"
-                        data-delete-message="Удалить блюдо «{{ product.title }}»? Это действие нельзя отменить.">
+                        data-delete-message="Удалить продукт «{{ product.title }}»? Это действие нельзя отменить.">
                     🗑️
                 </button>
             </div>
@@ -64,10 +64,10 @@
     <div class="empty-state">
         <div class="text-center py-5">
             <h3 class="text-muted mb-3">Здесь пока пусто</h3>
-            <p class="text-muted mb-4">В этой категории пока нет блюд.</p>
+            <p class="text-muted mb-4">В этой категории пока нет продуктов.</p>
             {% if user and user.role in ['admin', 'manager'] %}
             <a href="/manage/products/create/{{ category.id }}" class="btn btn-success btn-lg">
-                ➕ Создать первое блюдо
+                ➕ Создать первый продукт
             </a>
             {% endif %}
         </div>

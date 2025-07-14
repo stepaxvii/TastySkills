@@ -64,9 +64,9 @@ def init_db() -> None:
             sections[section_data["name"]] = created_section
             print(f"Создан раздел: {created_section.name}")
         
-        print("Создание категорий и блюд...")
+        print("Создание категорий и продуктов...")
         
-        # Данные для категорий и блюд
+        # Данные для категорий и продуктов
         menu_data = {
             "Бар": {
                 "Крепкие напитки": [
@@ -306,7 +306,7 @@ def init_db() -> None:
             }
         }
         
-        # Создаем категории и блюда
+        # Создаем категории и продукты
         for section_name, categories_data in menu_data.items():
             section = sections[section_name]
             for category_name, products_data in categories_data.items():
@@ -320,7 +320,7 @@ def init_db() -> None:
                 category = create_category(db, category_create)
                 print(f"Создана категория: {category.title} в разделе {section.name}")
                 
-                # Создаем блюда в категории
+                # Создаем продукты в категории
                 for product_data in products_data:
                     product_create = ProductCreate(
                         title=product_data["title"],
@@ -334,14 +334,14 @@ def init_db() -> None:
                         restaurant_id=restaurant.id  # type: ignore
                     )
                     product = create_product(db, product_create)
-                    print(f"  Создано блюдо: {product.title}")
+                    print(f"  Создан продукт: {product.title}")
         
         print("\nИнициализация базы данных завершена успешно!")
         print(f"Создано:")
         print(f"   Ресторанов: 1 ('{restaurant.name}')")
         print(f"   Разделов: {len(sections)}")
         print(f"   Категорий: 8")
-        print(f"   Блюд: 24")
+        print(f"   Продуктов: 24")
         print(f"\nДемо-страница: http://localhost:8000/demo")
         print(f"Для создания собственного ресторана зарегистрируйтесь как менеджер.")
         

@@ -51,7 +51,7 @@
                 <a href="/manage/categories/edit/{{ category.id }}" class="btn btn-outline-warning btn-sm" title="Редактировать категорию">✏️</a>
                 <button type="button" class="btn btn-outline-danger btn-sm" 
                         data-delete-url="/manage/categories/delete/{{ category.id }}"
-                        data-delete-message="Удалить категорию «{{ category.title }}»? Все блюда в этой категории также будут удалены."
+                        data-delete-message="Удалить категорию «{{ category.title }}»? Все продукты в этой категории также будут удалены."
                         title="Удалить категорию">
                     🗑️
                 </button>
@@ -64,7 +64,7 @@
     <div class="empty-state">
         <div class="text-center py-5">
             <h3 class="text-muted mb-3">Здесь пока пусто</h3>
-            <p class="text-muted mb-4">В этом разделе пока нет категорий блюд.</p>
+            <p class="text-muted mb-4">В этом разделе пока нет категорий продуктов.</p>
             {% if user and user.role in ['admin', 'manager'] %}
             <a href="/manage/categories/create/{{ section.id }}" class="btn btn-success btn-lg">
                 ➕ Создать первую категорию
