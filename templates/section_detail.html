@@ -52,15 +52,6 @@
                 {% if category.description %}
                 <p class="category-description">{{ category.description }}</p>
                 {% endif %}
-                {% if category.first_product %}
-                <div class="product-image">
-                    {% if category.first_product.image_path %}
-                    <img src="/uploads/{{ category.first_product.image_path }}" alt="{{ category.first_product.title }}" style="width: 100%; height: 100%; object-fit: cover; border-radius: 8px;">
-                    {% else %}
-                    <i class="fas fa-utensils"></i>
-                    {% endif %}
-                </div>
-                {% endif %}
             </div>
             {% if user and user.role in ['admin', 'manager'] %}
             <div class="category-actions">
@@ -89,7 +80,7 @@
     {% endif %}
 
     <div class="back-button-container">
-        <a href="/restaurants/{{ section.restaurant_id }}" class="btn-back">← Назад к ресторану</a>
+        <a href="/restaurants/{{ section.restaurant_id }}" class="btn-back">← к ресторану</a>
     </div>
 {% endblock %}
 

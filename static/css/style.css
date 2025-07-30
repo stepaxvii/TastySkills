@@ -158,6 +158,7 @@ input:focus, textarea:focus, select:focus {
     border: 2px dashed #dee2e6;
     margin-bottom: 0.75rem;
     transition: all 0.3s ease;
+    flex-shrink: 0;
 }
 
 /* Упрощенные заголовки */
@@ -223,6 +224,7 @@ input:focus, textarea:focus, select:focus {
     flex: 1 1 250px;
     min-width: 220px;
     max-width: 320px;
+    min-height: 200px;
     background: rgba(255, 255, 255, 0.95);
     backdrop-filter: blur(10px);
     border-radius: 12px;
@@ -230,6 +232,8 @@ input:focus, textarea:focus, select:focus {
     box-shadow: 0 4px 16px rgba(0,0,0,0.08);
     position: relative;
     transition: transform 0.2s, box-shadow 0.2s;
+    display: flex;
+    flex-direction: column;
 }
 
 /* Упрощенные заголовки страниц */
@@ -589,6 +593,9 @@ input:focus, textarea:focus, select:focus {
     margin: -0.5rem;
     border-radius: 8px;
     transition: background-color 0.3s ease;
+    flex: 1;
+    display: flex;
+    flex-direction: column;
 }
 
 .section-content:hover, .category-content:hover, .product-content:hover, .restaurant-content:hover {
@@ -604,6 +611,7 @@ input:focus, textarea:focus, select:focus {
     overflow-wrap: break-word;
     hyphens: auto;
     line-height: 1.3;
+    flex-shrink: 0;
 }
 
 .section-description, .category-description, .product-description, .restaurant-description {
@@ -614,6 +622,7 @@ input:focus, textarea:focus, select:focus {
     overflow-wrap: break-word;
     hyphens: auto;
     line-height: 1.4;
+    flex: 1;
 }
 
 .section-actions, .category-actions, .product-actions {
@@ -623,6 +632,7 @@ input:focus, textarea:focus, select:focus {
     display: flex;
     gap: 0.5rem;
     justify-content: center;
+    flex-shrink: 0;
 }
 
 .section-actions .btn, .category-actions .btn, .product-actions .btn {
@@ -643,6 +653,7 @@ input:focus, textarea:focus, select:focus {
     font-weight: 500;
     display: inline-block;
     margin-top: 0.5rem;
+    flex-shrink: 0;
 }
 
 /* Улучшенные стили для мобильных устройств */
@@ -682,6 +693,7 @@ input:focus, textarea:focus, select:focus {
         flex: none;
         min-width: auto;
         max-width: none;
+        min-height: auto;
         margin-bottom: 0;
     }
     
