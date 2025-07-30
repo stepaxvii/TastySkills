@@ -6,7 +6,7 @@ from sqlalchemy.orm import Session
 
 from app.domain.entities.models import User, Invitation
 from app.domain.entities.schemas import UserCreate
-from app.infrastructure.repositories.crud import create_user, get_user_by_telegram_id
+from app.infrastructure.repositories.crud import create_user, get_user_by_telegram_id, get_restaurants_by_manager
 
 
 class TelegramService:
@@ -120,6 +120,9 @@ class TelegramService:
         if role == "waiter" and manager_id:
             user.manager_id = manager_id  # type: ignore
             
+            # Автоматически связываем официанта с рестораном менеджера
+            TelegramService.link_waiter_to_manager_restaurant(db, user.id, manager_id)
+            
             if invitation_id:
                 invitation = db.query(Invitation).filter(Invitation.id == invitation_id).first()
                 if invitation:
@@ -131,6 +134,23 @@ class TelegramService:
         db.refresh(user)
         
         return user
+    
+    @staticmethod
+    def link_waiter_to_manager_restaurant(db: Session, waiter_id: int, manager_id: int) -> None:
+        """Связывание официанта с рестораном менеджера"""
+        from app.domain.entities.models import Restaurant
+        
+        # Получаем ресторан менеджера
+        manager_restaurants = get_restaurants_by_manager(db, manager_id)
+        
+        if manager_restaurants:
+            # Берем первый ресторан менеджера
+            restaurant = manager_restaurants[0]
+            
+            # Если у ресторана еще нет официанта, назначаем текущего
+            if not restaurant.waiter_id:  # type: ignore
+                restaurant.waiter_id = waiter_id  # type: ignore
+                db.commit()
     
     @staticmethod
     def get_manager_waiters(db: Session, manager_id: int) -> list[User]:

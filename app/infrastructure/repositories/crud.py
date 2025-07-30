@@ -118,6 +118,16 @@ def get_restaurants_by_manager(db: Session, manager_id: int) -> List[Restaurant]
 def get_restaurants_by_waiter(db: Session, waiter_id: int) -> List[Restaurant]:
     return db.query(Restaurant).filter(Restaurant.waiter_id == waiter_id).all()
 
+def get_restaurants_by_waiter_via_manager(db: Session, waiter_id: int) -> List[Restaurant]:
+    """Получение ресторанов официанта через его менеджера"""
+    # Сначала получаем официанта
+    waiter = db.query(User).filter(User.id == waiter_id).first()
+    if not waiter or not waiter.manager_id:
+        return []
+    
+    # Получаем рестораны менеджера
+    return db.query(Restaurant).filter(Restaurant.manager_id == waiter.manager_id).all()
+
 def create_restaurant(db: Session, restaurant: RestaurantCreate) -> Restaurant:
     db_restaurant = Restaurant(**restaurant.dict())
     db.add(db_restaurant)

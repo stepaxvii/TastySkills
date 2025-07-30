@@ -11,7 +11,7 @@ from app.infrastructure.repositories.crud import (
     get_recent_products, create_section, update_section, delete_section,
     create_category, update_category, delete_category,
     create_product, update_product, delete_product,
-    get_restaurants_by_manager, get_restaurants_by_waiter, create_restaurant,
+    get_restaurants_by_manager, get_restaurants_by_waiter, get_restaurants_by_waiter_via_manager, create_restaurant,
     get_recent_products_by_restaurants, get_sections, get_products, get_users,
     get_first_product_by_category
 )
@@ -66,7 +66,8 @@ def check_restaurant_access(user: Optional[User], restaurant_id: int, db: Sessio
     if str(user.role) == "manager":  # type: ignore
         user_restaurants = get_restaurants_by_manager(db, user.id)  # type: ignore
     elif str(user.role) == "waiter":  # type: ignore
-        user_restaurants = get_restaurants_by_waiter(db, user.id)  # type: ignore
+        # Официанты получают доступ к ресторанам через своих менеджеров
+        user_restaurants = get_restaurants_by_waiter_via_manager(db, user.id)  # type: ignore
     else:
         raise HTTPException(status_code=403, detail="Недостаточно прав")
     
@@ -115,7 +116,7 @@ async def index(
         if str(current_user.role) == 'manager':  # type: ignore
             user_restaurants = get_restaurants_by_manager(db, current_user.id)  # type: ignore
         else:
-            user_restaurants = get_restaurants_by_waiter(db, current_user.id)  # type: ignore
+            user_restaurants = get_restaurants_by_waiter_via_manager(db, current_user.id)  # type: ignore
         
         if user_restaurants:
             # Перенаправляем на ресторан пользователя
@@ -226,7 +227,7 @@ async def restaurants_page(
         if str(current_user.role) == 'manager':  # type: ignore
             user_restaurants = get_restaurants_by_manager(db, current_user.id)  # type: ignore
         elif str(current_user.role) == 'waiter':  # type: ignore
-            user_restaurants = get_restaurants_by_waiter(db, current_user.id)  # type: ignore
+            user_restaurants = get_restaurants_by_waiter_via_manager(db, current_user.id)  # type: ignore
         else:
             raise HTTPException(status_code=403, detail="Access denied")
         
@@ -387,7 +388,7 @@ async def recent_changes(
         if str(current_user.role) == "manager":  # type: ignore
             user_restaurants = get_restaurants_by_manager(db, current_user.id)  # type: ignore
         elif str(current_user.role) == "waiter":  # type: ignore
-            user_restaurants = get_restaurants_by_waiter(db, current_user.id)  # type: ignore
+            user_restaurants = get_restaurants_by_waiter_via_manager(db, current_user.id)  # type: ignore
         else:
             raise HTTPException(status_code=403, detail="Недостаточно прав")
         # Получаем ID ресторанов пользователя
