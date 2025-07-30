@@ -1,57 +1,73 @@
 {% extends "base.html" %}
 
-{% block title %}{{ section.name }} - {{ section.restaurant.name }}{% if is_demo %} - Демо{% endif %}{% endblock %}
+{% block title %}{{ section.name }}{% if is_demo %} - Демо{% endif %}{% endblock %}
 
 {% set breadcrumbs %}
     {% if is_demo %}
     <li class="breadcrumb-item"><a href="/demo">Демо-ресторан</a></li>
-    <li class="breadcrumb-item active" aria-current="page"><span>{{ section.name }}</span></li>
+    <li class="breadcrumb-item active" aria-current="page"><span>{{ section.name }} (Демо)</span></li>
     {% else %}
     {% if user and user.role == 'admin' %}
     <li class="breadcrumb-item"><a href="/restaurants">Рестораны</a></li>
     {% endif %}
-    <li class="breadcrumb-item"><a href="/restaurants/{{ section.restaurant.id }}">{{ section.restaurant.name }}</a></li>
+    <li class="breadcrumb-item"><a href="/restaurants/{{ section.restaurant_id }}">{{ section.restaurant.name }}</a></li>
     <li class="breadcrumb-item active" aria-current="page"><span>{{ section.name }}</span></li>
     {% endif %}
 {% endset %}
 
 {% block content %}
+    {% if is_demo %}
+    <div class="alert alert-info">
+        <strong>Демо-версия TastySkills</strong> - это пример того, как выглядит система управления меню для официантов.
+        <br><small>Для создания собственного ресторана <a href="/login">войдите в систему</a>.</small>
+    </div>
+    {% endif %}
+
     <div class="page-header-unified">
         <h1>{{ section.name }}</h1>
         {% if user and user.role in ['admin', 'manager'] %}
         <div class="management-buttons">
-            <a href="/manage/categories/create/{{ section.id }}" class="btn btn-outline-success btn-lg" title="Создать категорию">
+            <a href="/restaurants/{{ section.restaurant_id }}/sections/{{ section.id }}/manage/categories/create" class="btn btn-outline-success" title="Создать категорию">
                 ➕ Создать категорию
+            </a>
+            <a href="/restaurants/{{ section.restaurant_id }}/sections/{{ section.id }}/manage/edit" class="btn btn-outline-warning" title="Редактировать раздел">
+                ✏️ Редактировать раздел
             </a>
         </div>
         {% endif %}
     </div>
 
+    {% if section.description %}
+    <div class="alert alert-info">
+        {{ section.description }}
+    </div>
+    {% endif %}
+
     {% if categories %}
     <div class="categories-list">
         {% for category in categories %}
         <div class="category-card">
-            <div class="category-content" onclick="window.location.href='/restaurants/{{ section.restaurant.id }}/sections/{{ section.id }}/categories/{{ category.id }}'">
-                <div class="category-image" style="width:100%;aspect-ratio:4/3;display:flex;align-items:center;justify-content:center;background:#e9ecef;border-radius:8px;margin-bottom:0.75rem;overflow:hidden;">
-                    {% if category.first_product and category.first_product.image_path %}
-                        <img src="/uploads/{{ category.first_product.image_path }}" alt="{{ category.title }}" style="width:100%;height:100%;object-fit:cover;display:block;border-radius:8px;">
-                    {% else %}
-                        📸
-                    {% endif %}
-                </div>
-                <h5 class="category-title">
-                    {{ category.title }}
-                </h5>
+            <div class="category-content" onclick="window.location.href='/restaurants/{{ section.restaurant_id }}/sections/{{ section.id }}/categories/{{ category.id }}'">
+                <h5 class="category-title">{{ category.title }}</h5>
                 {% if category.description %}
                 <p class="category-description">{{ category.description }}</p>
+                {% endif %}
+                {% if category.first_product %}
+                <div class="product-image">
+                    {% if category.first_product.image_path %}
+                    <img src="/uploads/{{ category.first_product.image_path }}" alt="{{ category.first_product.title }}" style="width: 100%; height: 100%; object-fit: cover; border-radius: 8px;">
+                    {% else %}
+                    <i class="fas fa-utensils"></i>
+                    {% endif %}
+                </div>
                 {% endif %}
             </div>
             {% if user and user.role in ['admin', 'manager'] %}
             <div class="category-actions">
-                <a href="/manage/categories/edit/{{ category.id }}" class="btn btn-outline-warning btn-sm" title="Редактировать категорию">✏️</a>
+                <a href="/restaurants/{{ section.restaurant_id }}/sections/{{ section.id }}/categories/{{ category.id }}/manage/edit" class="btn btn-outline-warning btn-sm" title="Редактировать категорию">✏️</a>
                 <button type="button" class="btn btn-outline-danger btn-sm" 
-                        data-delete-url="/manage/categories/delete/{{ category.id }}"
-                        data-delete-message="Удалить категорию «{{ category.title }}»? Все продукты в этой категории также будут удалены."
+                        data-delete-url="/restaurants/{{ section.restaurant_id }}/sections/{{ section.id }}/categories/{{ category.id }}/manage/delete"
+                        data-delete-message="Удалить категорию «{{ category.title }}»? Все блюда в этой категории также будут удалены."
                         title="Удалить категорию">
                     🗑️
                 </button>
@@ -59,39 +75,39 @@
             {% endif %}
         </div>
         {% endfor %}
-        {% set remainder = categories|length % 4 %}
-        {% if remainder != 0 %}
-            {% for _ in range(4 - remainder) %}
-                <div class="category-card placeholder-card"></div>
-            {% endfor %}
-        {% endif %}
     </div>
     {% else %}
     <div class="empty-state">
-        <div class="text-center py-5">
-            <h3 class="text-muted mb-3">Здесь пока пусто</h3>
-            <p class="text-muted mb-4">В этом разделе пока нет категорий продуктов.</p>
-            {% if user and user.role in ['admin', 'manager'] %}
-            <a href="/manage/categories/create/{{ section.id }}" class="btn btn-outline-success btn-lg">
-                ➕ Создать первую категорию
-            </a>
-            {% endif %}
-        </div>
+        <h3>Здесь пока пусто</h3>
+        <p>В этом разделе пока нет категорий.</p>
+        {% if user and user.role in ['admin', 'manager'] %}
+        <a href="/restaurants/{{ section.restaurant_id }}/sections/{{ section.id }}/manage/categories/create" class="btn btn-outline-success">
+            ➕ Создать первую категорию
+        </a>
+        {% endif %}
     </div>
     {% endif %}
 
     <div class="back-button-container">
-        {% if is_demo %}
-        <a href="/demo" class="btn-back">← Назад к демо-ресторану</a>
-        {% else %}
-        <a href="/restaurants/{{ section.restaurant.id }}" class="btn-back">← Назад к ресторану</a>
-        {% endif %}
+        <a href="/restaurants/{{ section.restaurant_id }}" class="btn-back">← Назад к ресторану</a>
     </div>
+{% endblock %}
 
+{% block scripts %}
 <script>
+// Анимация появления карточек
+const cards = document.querySelectorAll('.category-card');
+cards.forEach((card, i) => {
+    card.style.opacity = 0;
+    setTimeout(() => {
+        card.style.transition = 'opacity 0.5s';
+        card.style.opacity = 1;
+    }, 100 + i * 150);
+});
+
 // Предотвращение всплытия событий от кнопок управления
 document.addEventListener('DOMContentLoaded', function() {
-    const actionButtons = document.querySelectorAll('.category-actions .btn');
+    const actionButtons = document.querySelectorAll('.category-actions .btn, .category-actions form');
     actionButtons.forEach(button => {
         button.addEventListener('click', function(e) {
             e.stopPropagation();

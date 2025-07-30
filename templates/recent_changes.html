@@ -1,58 +1,63 @@
 {% extends "base.html" %}
 
-{% block title %}Последние изменения - Basket of Products{% endblock %}
+{% block title %}Последние изменения - TastySkills{% endblock %}
 
 {% block content %}
-<div class="content-wrapper fade-in">
-    <div class="page-header mb-4">
-        <h1 class="display-5">Последние изменения</h1>
-        <p class="lead text-muted">Список последних изменённых продуктов</p>
-    </div>
+<div class="page-header-unified">
+    <h1>Последние изменения</h1>
+    <p class="lead text-muted">Список последних изменённых блюд</p>
+</div>
 
-    {% if recent_products %}
-    <div class="list-group">
-        {% for product in recent_products %}
-        <div class="list-group-item d-flex justify-content-between align-items-center {% if product.is_deleted %}bg-danger text-white{% endif %}">
-            {% if not product.is_deleted %}
-            <a href="/restaurants/{{ product.restaurant_id }}/sections/{{ product.category.section_id }}/categories/{{ product.category_id }}/products/{{ product.id }}" class="stretched-link text-decoration-none text-reset w-100 d-flex justify-content-between align-items-center">
-                <div>
-                    <strong>{{ product.title }}</strong>
-                </div>
-                <div>
-                    {{ product.modified_at.strftime('%d.%m.%Y') }}
-                </div>
-            </a>
-            {% else %}
-            <div class="w-100 d-flex justify-content-between align-items-center">
-                <div>
-                    <strong>{{ product.title }}</strong>
-                    <span class="badge bg-light text-danger ms-2">Удалён</span>
-                </div>
-                <div>
-                    {{ product.modified_at.strftime('%d.%m.%Y') }}
-                </div>
+{% if recent_products %}
+<div class="list-group">
+    {% for product in recent_products %}
+    <div class="list-group-item d-flex justify-content-between align-items-center {% if product.is_deleted %}bg-danger text-white{% endif %}">
+        {% if not product.is_deleted %}
+        <a href="/restaurants/{{ product.restaurant_id }}/sections/{{ product.category.section_id }}/categories/{{ product.category_id }}/products/{{ product.id }}" class="stretched-link text-decoration-none text-reset w-100 d-flex justify-content-between align-items-center">
+            <div>
+                <strong>{{ product.title }}</strong>
+                <small class="text-muted d-block">{{ product.restaurant.name }} → {{ product.category.section.name }} → {{ product.category.title }}</small>
             </div>
-            {% endif %}
+            <div>
+                {{ product.modified_at.strftime('%d.%m.%Y') }}
+            </div>
+        </a>
+        {% else %}
+        <div class="w-100 d-flex justify-content-between align-items-center">
+            <div>
+                <strong>{{ product.title }}</strong>
+                <span class="badge bg-light text-danger ms-2">Удалён</span>
+                <small class="text-muted d-block">{{ product.restaurant.name }} → {{ product.category.section.name }} → {{ product.category.title }}</small>
+            </div>
+            <div>
+                {{ product.modified_at.strftime('%d.%m.%Y') }}
+            </div>
         </div>
-        {% endfor %}
+        {% endif %}
     </div>
-    {% else %}
-    <div class="alert alert-info">
-        <p class="mb-0">Пока нет изменённых продуктов.</p>
-    </div>
-    {% endif %}
+    {% endfor %}
+</div>
+{% else %}
+<div class="empty-state">
+    <h3>Пока нет изменений</h3>
+    <p>В системе пока нет изменённых блюд.</p>
+</div>
+{% endif %}
+
+<div class="back-button-container">
+    <a href="/" class="btn-back">← Назад на главную</a>
 </div>
 {% endblock %}
 
 {% block scripts %}
 <script>
-// Анимация карточек продуктов
-const cards = document.querySelectorAll('.card');
-cards.forEach((card, i) => {
-    card.style.opacity = 0;
+// Анимация элементов списка
+const items = document.querySelectorAll('.list-group-item');
+items.forEach((item, i) => {
+    item.style.opacity = 0;
     setTimeout(() => {
-        card.style.transition = 'opacity 0.5s';
-        card.style.opacity = 1;
+        item.style.transition = 'opacity 0.5s';
+        item.style.opacity = 1;
     }, 100 + i * 120);
 });
 </script>

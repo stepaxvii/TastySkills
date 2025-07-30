@@ -14,10 +14,6 @@
 {% endset %}
 
 {% block content %}
-    <style>
-    .modal-backdrop.show { z-index: 1050; }
-    .modal.show { z-index: 1060; }
-    </style>
     {% if is_demo %}
     <div class="alert alert-info">
         <strong>Демо-версия TastySkills</strong> - это пример того, как выглядит система управления меню для официантов.
@@ -28,11 +24,11 @@
     <div class="page-header-unified">
         <h1>{{ restaurant.name }}</h1>
         {% if user and user.role in ['admin', 'manager'] %}
-        <div class="management-buttons d-flex gap-2">
-            <a href="/manage/sections/create/{{ restaurant.id }}" class="btn btn-outline-success btn-lg" title="Создать раздел">
+        <div class="management-buttons">
+            <a href="/restaurants/{{ restaurant.id }}/manage/sections/create" class="btn btn-outline-success" title="Создать раздел">
                 ➕ Создать раздел
             </a>
-            <a href="/manage/restaurants/edit/{{ restaurant.id }}" class="btn btn-outline-warning btn-lg" title="Редактировать ресторан">
+            <a href="/restaurants/{{ restaurant.id }}/manage/edit" class="btn btn-outline-warning" title="Редактировать ресторан">
                 ✏️ Редактировать ресторан
             </a>
         </div>
@@ -42,18 +38,18 @@
     {% if sections %}
     <div class="categories-list">
         {% for section in sections %}
-        <div class="section-card card">
+        <div class="section-card">
             <div class="section-content" onclick="window.location.href='/restaurants/{{ restaurant.id }}/sections/{{ section.id }}'">
-                <h5 class="card-title">
+                <h5 class="section-title">
                     {{ section.name }}
                 </h5>
                 {% if section.description %}
-                <p class="card-text">{{ section.description }}</p>
+                <p class="section-description">{{ section.description }}</p>
                 {% endif %}
             </div>
             {% if user and user.role in ['admin', 'manager'] %}
             <div class="section-actions">
-                <a href="/manage/sections/edit/{{ section.id }}" class="btn btn-outline-warning btn-sm" title="Редактировать раздел">✏️</a>
+                <a href="/restaurants/{{ restaurant.id }}/sections/{{ section.id }}/manage/edit" class="btn btn-outline-warning btn-sm" title="Редактировать раздел">✏️</a>
                 <button type="button" class="btn btn-outline-danger btn-sm" 
                         data-delete-url="/restaurants/{{ restaurant.id }}/sections/{{ section.id }}/manage/delete"
                         data-delete-message="Удалить раздел «{{ section.name }}»? Все категории и блюда в этом разделе также будут удалены."
@@ -67,15 +63,13 @@
     </div>
     {% else %}
     <div class="empty-state">
-        <div class="text-center py-5">
-            <h3 class="text-muted mb-3">Здесь пока пусто</h3>
-            <p class="text-muted mb-4">В этом ресторане пока нет разделов меню.</p>
-            {% if user and user.role in ['admin', 'manager'] %}
-            <a href="/manage/sections/create/{{ restaurant.id }}" class="btn btn-outline-success btn-lg">
-                ➕ Создать первый раздел
-            </a>
-            {% endif %}
-        </div>
+        <h3>Здесь пока пусто</h3>
+        <p>В этом ресторане пока нет разделов меню.</p>
+        {% if user and user.role in ['admin', 'manager'] %}
+        <a href="/restaurants/{{ restaurant.id }}/manage/sections/create" class="btn btn-outline-success">
+            ➕ Создать первый раздел
+        </a>
+        {% endif %}
     </div>
     {% endif %}
 
@@ -91,7 +85,7 @@
 {% block scripts %}
 <script>
 // Анимация появления карточек
-const cards = document.querySelectorAll('.card');
+const cards = document.querySelectorAll('.section-card');
 cards.forEach((card, i) => {
     card.style.opacity = 0;
     setTimeout(() => {
@@ -99,8 +93,8 @@ cards.forEach((card, i) => {
         card.style.opacity = 1;
     }, 100 + i * 150);
 });
+
 // Предотвращение всплытия событий от кнопок управления
-// (оставляем только для .section-actions, не трогаем модалки)
 document.addEventListener('DOMContentLoaded', function() {
     const actionButtons = document.querySelectorAll('.section-actions .btn, .section-actions form');
     actionButtons.forEach(button => {

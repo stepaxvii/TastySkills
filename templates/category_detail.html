@@ -1,94 +1,102 @@
 {% extends "base.html" %}
 
-{% block title %}{{ category.title }} - {{ category.section.name }}{% if is_demo %} - Демо{% endif %}{% endblock %}
+{% block title %}{{ category.title }}{% if is_demo %} - Демо{% endif %}{% endblock %}
 
 {% set breadcrumbs %}
     {% if is_demo %}
     <li class="breadcrumb-item"><a href="/demo">Демо-ресторан</a></li>
-    <li class="breadcrumb-item"><a href="/restaurants/{{ category.restaurant.id }}/sections/{{ category.section.id }}">{{ category.section.name }}</a></li>
-    <li class="breadcrumb-item active" aria-current="page"><span>{{ category.title }}</span></li>
+    <li class="breadcrumb-item"><a href="/demo">Разделы</a></li>
+    <li class="breadcrumb-item active" aria-current="page"><span>{{ category.title }} (Демо)</span></li>
     {% else %}
     {% if user and user.role == 'admin' %}
     <li class="breadcrumb-item"><a href="/restaurants">Рестораны</a></li>
     {% endif %}
-    <li class="breadcrumb-item"><a href="/restaurants/{{ category.restaurant.id }}">{{ category.restaurant.name }}</a></li>
-    <li class="breadcrumb-item"><a href="/restaurants/{{ category.restaurant.id }}/sections/{{ category.section.id }}">{{ category.section.name }}</a></li>
+    <li class="breadcrumb-item"><a href="/restaurants/{{ category.restaurant_id }}">{{ category.restaurant.name }}</a></li>
+    <li class="breadcrumb-item"><a href="/restaurants/{{ category.restaurant_id }}/sections/{{ category.section_id }}">{{ category.section.name }}</a></li>
     <li class="breadcrumb-item active" aria-current="page"><span>{{ category.title }}</span></li>
     {% endif %}
 {% endset %}
 
 {% block content %}
+    {% if is_demo %}
+    <div class="alert alert-info">
+        <strong>Демо-версия TastySkills</strong> - это пример того, как выглядит система управления меню для официантов.
+        <br><small>Для создания собственного ресторана <a href="/login">войдите в систему</a>.</small>
+    </div>
+    {% endif %}
+
     <div class="page-header-unified">
         <h1>{{ category.title }}</h1>
         {% if user and user.role in ['admin', 'manager'] %}
         <div class="management-buttons">
-            <a href="/manage/products/create/{{ category.id }}" class="btn btn-outline-success btn-lg" title="Создать продукт">
-                ➕ Создать продукт
+            <a href="/restaurants/{{ category.restaurant_id }}/sections/{{ category.section_id }}/categories/{{ category.id }}/manage/products/create" class="btn btn-outline-success" title="Создать блюдо">
+                ➕ Создать блюдо
+            </a>
+            <a href="/restaurants/{{ category.restaurant_id }}/sections/{{ category.section_id }}/categories/{{ category.id }}/manage/edit" class="btn btn-outline-warning" title="Редактировать категорию">
+                ✏️ Редактировать категорию
             </a>
         </div>
         {% endif %}
     </div>
 
+    {% if category.description %}
+    <div class="alert alert-info">
+        {{ category.description }}
+    </div>
+    {% endif %}
+
     {% if products %}
     <div class="products-grid">
         {% for product in products %}
         <div class="product-card">
-            <div class="product-content" onclick="window.location.href='/restaurants/{{ category.restaurant.id }}/sections/{{ category.section.id }}/categories/{{ category.id }}/products/{{ product.id }}'">
-                <!-- Фото продукта -->
+            <div class="product-content" onclick="window.location.href='/restaurants/{{ category.restaurant_id }}/sections/{{ category.section_id }}/categories/{{ category.id }}/products/{{ product.id }}'">
                 <div class="product-image">
                     {% if product.image_path %}
-                        <img src="/uploads/{{ product.image_path }}" alt="{{ product.title }}">
+                    <img src="/uploads/{{ product.image_path }}" alt="{{ product.title }}" style="width: 100%; height: 100%; object-fit: cover; border-radius: 8px;">
                     {% else %}
-                        📸
+                    <i class="fas fa-utensils"></i>
                     {% endif %}
                 </div>
-                <!-- Название продукта -->
-                <h5 class="product-title">
-                    {{ product.title }}
-                </h5>
+                <h5 class="product-title">{{ product.title }}</h5>
+                {% if product.weight %}
+                <p class="product-weight">{{ product.weight }}</p>
+                {% endif %}
             </div>
             {% if user and user.role in ['admin', 'manager'] %}
             <div class="product-actions">
-                <a href="/manage/products/edit/{{ product.id }}" class="btn btn-outline-warning btn-sm">✏️</a>
+                <a href="/restaurants/{{ category.restaurant_id }}/sections/{{ category.section_id }}/categories/{{ category.id }}/products/{{ product.id }}/manage/edit" class="btn btn-outline-warning btn-sm" title="Редактировать блюдо">✏️</a>
                 <button type="button" class="btn btn-outline-danger btn-sm" 
-                        data-delete-url="/manage/products/delete/{{ product.id }}"
-                        data-delete-message="Удалить «{{ product.title }}»?">
+                        data-delete-url="/restaurants/{{ category.restaurant_id }}/sections/{{ category.section_id }}/categories/{{ category.id }}/products/{{ product.id }}/manage/delete"
+                        data-delete-message="Удалить блюдо «{{ product.title }}»?"
+                        title="Удалить блюдо">
                     🗑️
                 </button>
             </div>
             {% endif %}
         </div>
         {% endfor %}
-        {% set remainder = products|length % 4 %}
-        {% if remainder != 0 %}
-            {% for _ in range(4 - remainder) %}
-                <div class="product-card placeholder-card"></div>
-            {% endfor %}
-        {% endif %}
     </div>
     {% else %}
     <div class="empty-state">
-        <div class="text-center py-5">
-            <h3 class="text-muted mb-3">Здесь пока пусто</h3>
-            <p class="text-muted mb-4">В этой категории пока нет продуктов.</p>
-            {% if user and user.role in ['admin', 'manager'] %}
-            <a href="/manage/products/create/{{ category.id }}" class="btn btn-outline-success btn-lg">
-                ➕ Создать первый продукт
-            </a>
-            {% endif %}
-        </div>
+        <h3>Здесь пока пусто</h3>
+        <p>В этой категории пока нет блюд.</p>
+        {% if user and user.role in ['admin', 'manager'] %}
+        <a href="/restaurants/{{ category.restaurant_id }}/sections/{{ category.section_id }}/categories/{{ category.id }}/manage/products/create" class="btn btn-outline-success">
+            ➕ Создать первое блюдо
+        </a>
+        {% endif %}
     </div>
     {% endif %}
-    
+
     <div class="back-button-container">
-        <a href="/restaurants/{{ category.restaurant.id }}/sections/{{ category.section.id }}" class="btn-back">← Назад к разделу</a>
+        <a href="/restaurants/{{ category.restaurant_id }}/sections/{{ category.section_id }}" class="btn-back">← Назад к разделу</a>
     </div>
 {% endblock %}
 
 {% block scripts %}
 <script>
 // Анимация появления карточек
-const cards = document.querySelectorAll('.card');
+const cards = document.querySelectorAll('.product-card');
 cards.forEach((card, i) => {
     card.style.opacity = 0;
     setTimeout(() => {
@@ -98,10 +106,12 @@ cards.forEach((card, i) => {
 });
 
 // Предотвращение всплытия событий от кнопок управления
-const actionButtons = document.querySelectorAll('.product-actions .btn');
-actionButtons.forEach(button => {
-    button.addEventListener('click', function(e) {
-        e.stopPropagation();
+document.addEventListener('DOMContentLoaded', function() {
+    const actionButtons = document.querySelectorAll('.product-actions .btn, .product-actions form');
+    actionButtons.forEach(button => {
+        button.addEventListener('click', function(e) {
+            e.stopPropagation();
+        });
     });
 });
 </script>

@@ -3,25 +3,15 @@
 {% block title %}Ошибка{% endblock %}
 
 {% block content %}
-<div class="container py-5">
-    <div class="row justify-content-center">
-        <div class="col-md-8">
-            <div class="card shadow-sm">
-                <div class="card-body text-center">
-                    <h1 class="display-4 mb-3">Ошибка {{ error_code }}</h1>
-                    <p class="lead mb-4">
-                        {{ error_message }}
-                    </p>
-                    {% if error_code in [401, 403] %}
-                        <a href="/login" class="btn btn-primary btn-lg">Войти</a>
-                    {% elif error_code == 404 %}
-                        <a href="/" class="btn btn-secondary btn-lg">На главную</a>
-                    {% else %}
-                        <a href="/" class="btn btn-outline-secondary">Вернуться на главную</a>
-                    {% endif %}
-                </div>
-            </div>
-        </div>
-    </div>
+<div class="empty-state">
+    <h1>Ошибка {{ error_code }}</h1>
+    <p>{{ error_message }}</p>
+    {% if error_code in [401, 403] %}
+        <a href="/login" class="btn btn-primary">Войти</a>
+    {% elif error_code == 404 %}
+        <a href="/" class="btn btn-secondary">На главную</a>
+    {% else %}
+        <a href="/" class="btn btn-outline-secondary">Вернуться на главную</a>
+    {% endif %}
 </div>
 {% endblock %} 

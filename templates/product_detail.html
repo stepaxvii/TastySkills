@@ -1,118 +1,120 @@
 {% extends "base.html" %}
 
-{% block title %}{{ product.title }} - {{ product.category.title }}{% if is_demo %} - Демо{% endif %}{% endblock %}
+{% block title %}{{ product.title }}{% if is_demo %} - Демо{% endif %}{% endblock %}
 
 {% set breadcrumbs %}
     {% if is_demo %}
     <li class="breadcrumb-item"><a href="/demo">Демо-ресторан</a></li>
-    <li class="breadcrumb-item"><a href="/restaurants/{{ product.restaurant.id }}/sections/{{ product.category.section.id }}">{{ product.category.section.name }}</a></li>
-    <li class="breadcrumb-item"><a href="/restaurants/{{ product.restaurant.id }}/sections/{{ product.category.section.id }}/categories/{{ product.category.id }}">{{ product.category.title }}</a></li>
-    <li class="breadcrumb-item active" aria-current="page"><span>{{ product.title }}</span></li>
+    <li class="breadcrumb-item"><a href="/demo">Разделы</a></li>
+    <li class="breadcrumb-item"><a href="/demo">Категории</a></li>
+    <li class="breadcrumb-item active" aria-current="page"><span>{{ product.title }} (Демо)</span></li>
     {% else %}
     {% if user and user.role == 'admin' %}
     <li class="breadcrumb-item"><a href="/restaurants">Рестораны</a></li>
     {% endif %}
-    <li class="breadcrumb-item"><a href="/restaurants/{{ product.restaurant.id }}">{{ product.restaurant.name }}</a></li>
-    <li class="breadcrumb-item"><a href="/restaurants/{{ product.restaurant.id }}/sections/{{ product.category.section.id }}">{{ product.category.section.name }}</a></li>
-    <li class="breadcrumb-item"><a href="/restaurants/{{ product.restaurant.id }}/sections/{{ product.category.section.id }}/categories/{{ product.category.id }}">{{ product.category.title }}</a></li>
+    <li class="breadcrumb-item"><a href="/restaurants/{{ product.restaurant_id }}">{{ product.restaurant.name }}</a></li>
+    <li class="breadcrumb-item"><a href="/restaurants/{{ product.restaurant_id }}/sections/{{ product.category.section_id }}">{{ product.category.section.name }}</a></li>
+    <li class="breadcrumb-item"><a href="/restaurants/{{ product.restaurant_id }}/sections/{{ product.category.section_id }}/categories/{{ product.category.id }}">{{ product.category.title }}</a></li>
     <li class="breadcrumb-item active" aria-current="page"><span>{{ product.title }}</span></li>
     {% endif %}
 {% endset %}
 
 {% block content %}
-<div class="product-page-container">
-    <div class="product-header">
-        <h1>{{ product.title }}</h1>
-    </div>
+{% if is_demo %}
+<div class="alert alert-info">
+    <strong>Демо-версия TastySkills</strong> - это пример того, как выглядит система управления меню для официантов.
+    <br><small>Для создания собственного ресторана <a href="/login">войдите в систему</a>.</small>
+</div>
+{% endif %}
 
-    <div class="product-layout">
-        <!-- Левая колонка: фото -->
-        <div class="product-image-container">
-            <div class="product-image" style="width:100%;height:300px;display:flex;align-items:center;justify-content:center;">
-                {% if product.image_path %}
-                    <img src="/uploads/{{ product.image_path }}" alt="{{ product.title }}" style="width:100%;height:100%;object-fit:cover;border-radius:12px;">
-                {% else %}
-                    📸
-                {% endif %}
-            </div>
-        </div>
+<div class="product-header">
+    <h1>{{ product.title }}</h1>
+    {% if product.weight %}
+    <div class="product-weight">{{ product.weight }}</div>
+    {% endif %}
+</div>
 
-        <!-- Правая колонка: краткая информация -->
-        <div class="product-side-info">
-            {% if product.weight %}
-            <div class="product-info-card">
-                <h4>⚖️ Выход</h4>
-                <p>{{ product.weight }}</p>
-            </div>
-            {% endif %}
-
-            {% if product.allergens %}
-            <div class="product-info-card">
-                <h4>⚠️ Аллергены</h4>
-                <p>{{ product.allergens }}</p>
-            </div>
-            {% endif %}
-
-            {% if product.gastronomic_pairings %}
-            <div class="product-info-card">
-                <h4>🍷 Гастрономические сочетания</h4>
-                <p>{{ product.gastronomic_pairings }}</p>
-            </div>
+<div class="product-content-grid">
+    <!-- Левая колонка: фото -->
+    <div class="product-image-section">
+        <div class="product-image-placeholder">
+            {% if product.image_path %}
+            <img src="/uploads/{{ product.image_path }}" alt="{{ product.title }}" style="width:100%;height:100%;object-fit:cover;border-radius:8px;">
+            {% else %}
+            <i class="fas fa-utensils"></i>
             {% endif %}
         </div>
+        <div class="product-image-text">Фото блюда</div>
     </div>
 
-    <!-- Контейнер product-main-content убран, содержимое перенесено напрямую -->
-    <div class="product-info-card">
-        <h4>🥘 Ингредиенты</h4>
-        <p>{{ product.ingredients }}</p>
-    </div>
+    <!-- Правая колонка: краткая информация -->
+    <div class="product-info-section">
+        {% if product.allergens %}
+        <div class="product-info-card">
+            <h4>⚠️ Аллергены</h4>
+            <p>{{ product.allergens }}</p>
+        </div>
+        {% endif %}
 
-    {% if product.description %}
-    <div class="product-info-card">
-        <h4>👨‍🍳 Процесс приготовления</h4>
-        <p>{{ product.description }}</p>
+        {% if product.gastronomic_pairings %}
+        <div class="product-info-card">
+            <h4>🍷 Гастрономические сочетания</h4>
+            <p>{{ product.gastronomic_pairings }}</p>
+        </div>
+        {% endif %}
     </div>
-    {% endif %}
+</div>
 
-    {% if product.features %}
-    <div class="product-info-card">
-        <h4>✨ Особенности продукта</h4>
-        <p>{{ product.features }}</p>
-    </div>
-    {% endif %}
+<!-- Основная информация о продукте -->
+<div class="product-info-card">
+    <h4>🥘 Ингредиенты</h4>
+    <p>{{ product.ingredients }}</p>
+</div>
 
-    {% if product.table_setting %}
-    <div class="product-info-card">
-        <h4>🍽️ Подача</h4>
-        <p>{{ product.table_setting }}</p>
-    </div>
-    {% endif %}
-    <!-- конец перенесённого содержимого -->
+{% if product.description %}
+<div class="product-info-card">
+    <h4>👨‍🍳 Процесс приготовления</h4>
+    <p>{{ product.description }}</p>
+</div>
+{% endif %}
 
-    <div class="back-button-container">
-        <a href="/restaurants/{{ product.restaurant.id }}/sections/{{ product.category.section.id }}/categories/{{ product.category.id }}" class="btn-back">← Назад к категории</a>
-    </div>
-    {% if user and user.role in ['admin', 'manager'] %}
-    <div class="product-management">
-        <a href="/manage/products/edit/{{ product.id }}" class="btn btn-outline-warning btn-lg" title="Редактировать продукт">
-            ✏️ Редактировать
-        </a>
-        <button type="button" class="btn btn-outline-danger btn-lg" 
-                data-delete-url="/manage/products/delete/{{ product.id }}"
-                data-delete-message="Удалить «{{ product.title }}»?"
-                title="Удалить продукт">
-            🗑️ Удалить
-        </button>
-    </div>
-    {% endif %}
+{% if product.features %}
+<div class="product-info-card">
+    <h4>✨ Особенности продукта</h4>
+    <p>{{ product.features }}</p>
+</div>
+{% endif %}
+
+{% if product.table_setting %}
+<div class="product-info-card">
+    <h4>🍽️ Подача</h4>
+    <p>{{ product.table_setting }}</p>
+</div>
+{% endif %}
+
+{% if user and user.role in ['admin', 'manager'] %}
+<div class="product-management">
+    <a href="/restaurants/{{ product.restaurant_id }}/sections/{{ product.category.section_id }}/categories/{{ product.category.id }}/products/{{ product.id }}/manage/edit" class="btn btn-outline-warning" title="Редактировать блюдо">
+        ✏️ Редактировать
+    </a>
+    <button type="button" class="btn btn-outline-danger" 
+            data-delete-url="/restaurants/{{ product.restaurant_id }}/sections/{{ product.category.section_id }}/categories/{{ product.category.id }}/products/{{ product.id }}/manage/delete"
+            data-delete-message="Удалить блюдо «{{ product.title }}»?"
+            title="Удалить блюдо">
+        🗑️ Удалить
+    </button>
+</div>
+{% endif %}
+
+<div class="back-button-container">
+    <a href="/restaurants/{{ product.restaurant_id }}/sections/{{ product.category.section_id }}/categories/{{ product.category.id }}" class="btn-back">← Назад к категории</a>
 </div>
 {% endblock %}
 
 {% block scripts %}
 <script>
 // Анимация появления карточек
-const cards = document.querySelectorAll('.card');
+const cards = document.querySelectorAll('.product-info-card');
 cards.forEach((card, i) => {
     card.style.opacity = 0;
     setTimeout(() => {

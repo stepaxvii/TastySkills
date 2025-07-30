@@ -1,56 +1,51 @@
 {% extends "base.html" %}
 
-{% block title %}Рестораны - Basket of Products{% endblock %}
+{% block title %}Рестораны - TastySkills{% endblock %}
 
 {% block content %}
-<div class="content-wrapper fade-in">
-
-    <div class="page-header-unified">
-        <h1>Рестораны</h1>
-        {% if user and user.role in ['admin', 'manager'] %}
-        <div class="management-buttons">
-            <a href="/manage/restaurants/create" class="btn btn-outline-success btn-lg">
-                ➕ Создать ресторан
-            </a>
-        </div>
-        {% endif %}
+<div class="page-header-unified">
+    <h1>Рестораны</h1>
+    {% if user and user.role in ['admin', 'manager'] %}
+    <div class="management-buttons">
+        <a href="/manage/restaurants/create" class="btn btn-outline-success">
+            ➕ Создать ресторан
+        </a>
     </div>
-    {% if restaurants %}
-        <div class="categories-list">
-            {% for restaurant in restaurants %}
-            <div class="restaurant-card">
-                <div class="restaurant-content" onclick="window.location.href='/restaurants/{{ restaurant.id }}'">
-                    <h4 class="card-title">{{ restaurant.name }}</h4>
-                    <p class="card-text">{{ restaurant.concept or 'Без описания' }}</p>
-                </div>
-            </div>
-            {% endfor %}
-        </div>
-    {% else %}
-        <div class="empty-state">
-            <div class="text-center py-5">
-                <h3 class="text-muted mb-3">Здесь пока пусто</h3>
-                <p class="text-muted mb-4">В системе пока нет ресторанов.</p>
-                {% if user and user.role in ['admin', 'manager'] %}
-                <a href="/manage/restaurants/create" class="btn btn-outline-success btn-lg">
-                    ➕ Создать ресторан
-                </a>
-                {% endif %}
-            </div>
-        </div>
     {% endif %}
+</div>
 
-    <div class="back-button-container">
-        <a href="/" class="btn-back">← Назад на главную</a>
+{% if restaurants %}
+<div class="categories-list">
+    {% for restaurant in restaurants %}
+    <div class="restaurant-card">
+        <div class="restaurant-content" onclick="window.location.href='/restaurants/{{ restaurant.id }}'">
+            <h4 class="restaurant-title">{{ restaurant.name }}</h4>
+            <p class="restaurant-description">{{ restaurant.concept or 'Без описания' }}</p>
+        </div>
     </div>
+    {% endfor %}
+</div>
+{% else %}
+<div class="empty-state">
+    <h3>Здесь пока пусто</h3>
+    <p>В системе пока нет ресторанов.</p>
+    {% if user and user.role in ['admin', 'manager'] %}
+    <a href="/manage/restaurants/create" class="btn btn-outline-success">
+        ➕ Создать ресторан
+    </a>
+    {% endif %}
+</div>
+{% endif %}
 
+<div class="back-button-container">
+    <a href="/" class="btn-back">← Назад на главную</a>
 </div>
 {% endblock %}
 
 {% block scripts %}
 <script>
 // Анимация карточек ресторанов
-const cards = document.querySelectorAll('.card');
+const cards = document.querySelectorAll('.restaurant-card');
 cards.forEach((card, i) => {
     card.style.opacity = 0;
     setTimeout(() => {
