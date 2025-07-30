@@ -11,19 +11,14 @@ from app.infrastructure.repositories.crud import (
     get_recent_products, create_section, update_section, delete_section,
     create_category, update_category, delete_category,
     create_product, update_product, delete_product,
-    get_restaurants_by_manager, get_restaurants_by_waiter, get_restaurants_by_waiter_via_manager, create_restaurant,
-    get_recent_products_by_restaurants, get_sections, get_products, get_users,
-    get_first_product_by_category
+    get_restaurants_by_manager, get_restaurants_by_waiter_via_manager, create_restaurant,
+    get_recent_products_by_restaurants, get_first_product_by_category
 )
 from app.domain.entities.schemas import SectionCreate, SectionUpdate, CategoryCreate, CategoryUpdate, ProductCreate, ProductUpdate, RestaurantCreate
 from typing import Optional, Any
 from datetime import timedelta
 from app.config import ACCESS_TOKEN_EXPIRE_MINUTES
-import os
-from fastapi import status
-from fastapi import FastAPI
 from starlette.exceptions import HTTPException
-from fastapi.staticfiles import StaticFiles
 
 router = APIRouter()
 templates = Jinja2Templates(directory="templates")

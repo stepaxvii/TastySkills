@@ -7,7 +7,7 @@ from sqlalchemy import func
 
 from app.domain.entities.models import User, Invitation
 from app.domain.entities.schemas import UserCreate
-from app.infrastructure.repositories.crud import create_user, get_user_by_telegram_id, get_restaurants_by_manager
+from app.infrastructure.repositories.crud import create_user, get_restaurants_by_manager
 
 
 class TelegramService:

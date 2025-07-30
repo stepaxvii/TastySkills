@@ -3,9 +3,8 @@ import sys
 import os
 sys.path.append(os.path.dirname(os.path.abspath(__file__)))
 
-from sqlalchemy.orm import Session
 from app.infrastructure.database.database import engine, SessionLocal
-from app.domain.entities.models import Base, User, Restaurant, Section, Category, Product
+from app.domain.entities.models import Base, Restaurant
 from app.domain.entities.schemas import RestaurantCreate, SectionCreate, CategoryCreate, ProductCreate
 from app.infrastructure.repositories.crud import (
     create_restaurant, create_section, create_category, create_product

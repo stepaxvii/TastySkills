@@ -4,7 +4,6 @@ from app.infrastructure.repositories.crud import (
 )
 from fastapi import HTTPException
 from sqlalchemy.orm import Session
-from typing import Optional
 
 class CategoryService:
     def __init__(self, db: Session):

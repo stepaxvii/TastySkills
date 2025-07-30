@@ -1,15 +1,15 @@
 import os
 import logging
 from aiogram import Router, F
-from aiogram.types import Message, CallbackQuery
+from aiogram.types import Message
 from aiogram.filters import Command
 from aiogram.fsm.context import FSMContext
 from app.domain.entities.telegram_states import RegistrationStates
 from app.application.services.telegram_service import TelegramService
-from app.presentation.telegram.keyboards import get_registration_choice_keyboard, get_manager_menu_keyboard, get_admin_menu_keyboard, get_waiter_menu_keyboard
-from app.infrastructure.database.database import SessionLocal
+from app.presentation.telegram.keyboards import get_manager_menu_keyboard, get_admin_menu_keyboard, get_waiter_menu_keyboard
 from app.infrastructure.repositories.crud import get_user_by_telegram_id, get_user_by_username, create_user
 from app.domain.entities.schemas import UserCreate
+from app.presentation.telegram.utils import get_db_session, send_welcome_message, handle_database_error
 from dotenv import load_dotenv
 
 load_dotenv()
@@ -39,147 +39,115 @@ async def cmd_myid(message: Message) -> None:
 @registration_router.message(Command("start"))
 async def cmd_start(message: Message, state: FSMContext) -> None:
     user_id = message.from_user.id # type: ignore
-    db = SessionLocal()
-    try:
-        # Отладочная информация
-        logger.info(f"Пользователь {user_id} запустил бота. ADMIN_ID: {ADMIN_ID}")
-        
-        # Проверяем, является ли пользователь админом
-        if str(user_id) == ADMIN_ID:
-            admin = get_user_by_username(db, ADMIN_USERNAME)
-            if not admin:
-                user_data = UserCreate(
-                    username=ADMIN_USERNAME,
-                    password=ADMIN_PASSWORD,
-                    role="admin"
-                )
-                admin = create_user(db, user_data)
-                
-                # Устанавливаем Telegram данные для админа
-                assert message.from_user is not None
-                admin.telegram_id = message.from_user.id  # type: ignore
-                admin.telegram_username = message.from_user.username  # type: ignore
-                admin.telegram_first_name = message.from_user.first_name  # type: ignore
-                admin.telegram_last_name = message.from_user.last_name  # type: ignore
-                admin.is_telegram_user = True  # type: ignore
-                db.commit()
-                
+    async with get_db_session() as db:
+        try:
+            # Отладочная информация
+            logger.info(f"Пользователь {user_id} запустил бота. ADMIN_ID: {ADMIN_ID}")
+            
+            # Проверяем, является ли пользователь админом
+            if str(user_id) == ADMIN_ID:
+                admin = get_user_by_username(db, ADMIN_USERNAME)
+                if not admin:
+                    user_data = UserCreate(
+                        username=ADMIN_USERNAME,
+                        password=ADMIN_PASSWORD,
+                        role="admin"
+                    )
+                    admin = create_user(db, user_data)
+                    
+                    # Устанавливаем Telegram данные для админа
+                    assert message.from_user is not None
+                    admin.telegram_id = message.from_user.id  # type: ignore
+                    admin.telegram_username = message.from_user.username  # type: ignore
+                    admin.telegram_first_name = message.from_user.first_name  # type: ignore
+                    admin.telegram_last_name = message.from_user.last_name  # type: ignore
+                    admin.is_telegram_user = True  # type: ignore
+                    db.commit()
+                    
+                    await message.answer(
+                        f"✅ Администратор создан!\n\n"
+                        f"Логин: {ADMIN_USERNAME}\n"
+                        f"Пароль: {ADMIN_PASSWORD}\n\n"
+                        f"Используйте кнопки ниже для управления:",
+                        reply_markup=get_admin_menu_keyboard()
+                    )
+                    return
+                else:
+                    # Если админ уже существует, показываем приветствие с клавиатурой
+                    await send_welcome_message(message, admin, "admin")
+                    return
+            
+            # Для всех остальных пользователей проверяем, есть ли параметр приглашения
+            start_param = message.text.split()[1] if message.text and len(message.text.split()) > 1 else None
+            
+            if not start_param or not start_param.startswith("invite_"):
+                # Если нет приглашения, показываем сообщение о том, что нужна ссылка
                 await message.answer(
-                    f"✅ Администратор создан!\n\n"
-                    f"Логин: {ADMIN_USERNAME}\n"
-                    f"Пароль: {ADMIN_PASSWORD}\n\n"
-                    f"Используйте кнопки ниже для управления:",
-                    reply_markup=get_admin_menu_keyboard()
+                    "🤖 TastySkills Bot\n\n"
+                    "Для регистрации в системе вам необходима пригласительная ссылка.\n\n"
+                    "Обратитесь к администратору или менеджеру для получения ссылки."
                 )
                 return
+            
+            # Обрабатываем приглашение
+            invitation_code = start_param[7:]
+            invitation_data = TelegramService.process_invitation_code(db, invitation_code)
+            
+            if not invitation_data:
+                await message.answer(
+                    "❌ Неверная ссылка приглашения.\n\n"
+                    "Обратитесь к администратору или менеджеру для получения корректной ссылки."
+                )
+                return
+            
+            # Проверяем, не зарегистрирован ли уже пользователь
+            existing_user = get_user_by_telegram_id(db, user_id)
+            if existing_user:
+                # Пользователь уже зарегистрирован, показываем соответствующую клавиатуру
+                await send_welcome_message(message, existing_user, existing_user.role)  # type: ignore
+                return
+            
+            # Начинаем процесс регистрации по приглашению
+            if invitation_data["type"] == "manager_link":
+                await state.update_data(
+                    registration_type="waiter",
+                    manager_id=invitation_data["manager_id"]
+                )
+                await state.set_state(RegistrationStates.waiting_for_username)
+                await message.answer(
+                    f"👤 Регистрация по приглашению менеджера\n\n"
+                    f"✅ Приглашение принято!\n"
+                    f"Менеджер: {invitation_data['manager_username']}\n"
+                    f"Вы будете зарегистрированы как официант.\n\n"
+                    f"Введите логин для входа в систему:\n(разрешены только латинские буквы, цифры и символы)"
+                )
+            elif invitation_data["type"] == "admin_manager_invitation":
+                await state.update_data(
+                    registration_type="manager",
+                    invitation_id=invitation_data["invitation_id"]
+                )
+                await state.set_state(RegistrationStates.waiting_for_username)
+                await message.answer(
+                    f"👑 Регистрация менеджера по приглашению администратора\n\n"
+                    f"✅ Приглашение принято!\n"
+                    f"Вы будете зарегистрированы как менеджер.\n\n"
+                    f"Введите логин для входа в систему:\n(разрешены только латинские буквы, цифры и символы)"
+                )
             else:
-                # Если админ уже существует, показываем приветствие с клавиатурой
-                await message.answer(
-                    f"👋 Добро пожаловать, {admin.telegram_first_name or admin.username}!\n\n"
-                    f"👑 Роль: Администратор\n"
-                    f"🔗 Веб-интерфейс: http://...\n\n"
-                    f"Используйте кнопки ниже для управления:",
-                    reply_markup=get_admin_menu_keyboard()
+                await state.update_data(
+                    registration_type="waiter",
+                    invitation_id=invitation_data["invitation_id"],
+                    manager_id=invitation_data["manager_id"]
                 )
-                return
-        
-        # Для всех остальных пользователей проверяем, есть ли параметр приглашения
-        start_param = message.text.split()[1] if message.text and len(message.text.split()) > 1 else None
-        
-        if not start_param or not start_param.startswith("invite_"):
-            # Если нет приглашения, показываем сообщение о том, что нужна ссылка
-            await message.answer(
-                "🤖 TastySkills Bot\n\n"
-                "Для регистрации в системе вам необходима пригласительная ссылка.\n\n"
-                "Обратитесь к администратору или менеджеру для получения ссылки."
-            )
-            return
-        
-        # Обрабатываем приглашение
-        invitation_code = start_param[7:]
-        invitation_data = TelegramService.process_invitation_code(db, invitation_code)
-        
-        if not invitation_data:
-            await message.answer(
-                "❌ Неверная ссылка приглашения.\n\n"
-                "Обратитесь к администратору или менеджеру для получения корректной ссылки."
-            )
-            return
-        
-        # Проверяем, не зарегистрирован ли уже пользователь
-        existing_user = get_user_by_telegram_id(db, user_id)
-        if existing_user:
-            # Пользователь уже зарегистрирован, показываем соответствующую клавиатуру
-            if existing_user.role == "admin":  # type: ignore
+                await state.set_state(RegistrationStates.waiting_for_username)
                 await message.answer(
-                    f"👋 Добро пожаловать, {existing_user.telegram_first_name or existing_user.username}!\n\n"
-                    f"👑 Роль: Администратор\n"
-                    f"🔗 Веб-интерфейс: http://...\n\n"
-                    f"Используйте кнопки ниже для управления:",
-                    reply_markup=get_admin_menu_keyboard()
+                    f"👤 Регистрация по приглашению\n\n"
+                    f"✅ Код приглашения принят!\n"
+                    f"Вы будете зарегистрированы как официант.\n\n"
+                    f"Введите логин для входа в систему:\n(разрешены только латинские буквы, цифры и символы)"
                 )
-            elif existing_user.role == "manager":  # type: ignore
-                await message.answer(
-                    f"👋 Добро пожаловать, {existing_user.telegram_first_name or existing_user.username}!\n\n"
-                    f"👑 Роль: Менеджер\n"
-                    f"🔗 Веб-интерфейс: http://...\n\n"
-                    f"Используйте кнопки ниже для управления:",
-                    reply_markup=get_manager_menu_keyboard()
-                )
-            else:  # waiter
-                await message.answer(
-                    f"👋 Добро пожаловать, {existing_user.telegram_first_name or existing_user.username}!\n\n"
-                    f"👤 Роль: Официант\n"
-                    f"🔗 Веб-интерфейс: http://...\n\n"
-                    f"Используйте кнопки ниже для работы:",
-                    reply_markup=get_waiter_menu_keyboard()
-                )
-            return
-        
-        # Начинаем процесс регистрации по приглашению
-        if invitation_data["type"] == "manager_link":
-            await state.update_data(
-                registration_type="waiter",
-                manager_id=invitation_data["manager_id"]
-            )
-            await state.set_state(RegistrationStates.waiting_for_username)
-            await message.answer(
-                f"👤 Регистрация по приглашению менеджера\n\n"
-                f"✅ Приглашение принято!\n"
-                f"Менеджер: {invitation_data['manager_username']}\n"
-                f"Вы будете зарегистрированы как официант.\n\n"
-                f"Введите логин для входа в систему:\n(разрешены только латинские буквы, цифры и символы)"
-            )
-        elif invitation_data["type"] == "admin_manager_invitation":
-            await state.update_data(
-                registration_type="manager",
-                invitation_id=invitation_data["invitation_id"]
-            )
-            await state.set_state(RegistrationStates.waiting_for_username)
-            await message.answer(
-                f"👑 Регистрация менеджера по приглашению администратора\n\n"
-                f"✅ Приглашение принято!\n"
-                f"Вы будете зарегистрированы как менеджер.\n\n"
-                f"Введите логин для входа в систему:\n(разрешены только латинские буквы, цифры и символы)"
-            )
-        else:
-            await state.update_data(
-                registration_type="waiter",
-                invitation_id=invitation_data["invitation_id"],
-                manager_id=invitation_data["manager_id"]
-            )
-            await state.set_state(RegistrationStates.waiting_for_username)
-            await message.answer(
-                f"👤 Регистрация по приглашению\n\n"
-                f"✅ Код приглашения принят!\n"
-                f"Вы будете зарегистрированы как официант.\n\n"
-                f"Введите логин для входа в систему:\n(разрешены только латинские буквы, цифры и символы)"
-            )
-    except Exception as e:
-        logger.error(f"Ошибка при обработке команды start: {e}")
-        await message.answer("❌ Произошла ошибка. Попробуйте еще раз.")
-    finally:
-        db.close()
+        except Exception as e:
+            await handle_database_error(message, e, "обработке команды start")
 
 @registration_router.message(RegistrationStates.waiting_for_username)
 async def process_username(message: Message, state: FSMContext) -> None:
@@ -219,46 +187,44 @@ async def complete_registration(message: Message, state: FSMContext, role: str =
         await message.answer("❌ Ошибка: отсутствуют данные для регистрации")
         return
     logger.info(f"Создание пользователя: {username}, роль: {role}")
-    db = SessionLocal()
-    try:
-        assert message.from_user is not None
-        telegram_data = {
-            'id': message.from_user.id,
-            'username': message.from_user.username,
-            'first_name': message.from_user.first_name,
-            'last_name': message.from_user.last_name
-        }
-        user = TelegramService.register_user(
-            db=db,
-            username=username,
-            password=password,
-            role=role,
-            telegram_data=telegram_data,
-            manager_id=user_data.get('manager_id'),
-            invitation_id=user_data.get('invitation_id')
-        )
-        logger.info(f"Пользователь создан с ID: {user.id}")
-        if role == "manager":
-            await message.answer(
-                f"🎉 Регистрация менеджера завершена!\n\n"
-                f"👤 Логин: {username}\n"
-                f"👑 Роль: Менеджер\n\n"
-                f"Теперь вы можете создавать приглашения для официантов.\n"
-                f"Используйте кнопку '📋 Ссылка для регистрации'",
-                reply_markup=get_manager_menu_keyboard()
+    
+    async with get_db_session() as db:
+        try:
+            assert message.from_user is not None
+            telegram_data = {
+                'id': message.from_user.id,
+                'username': message.from_user.username,
+                'first_name': message.from_user.first_name,
+                'last_name': message.from_user.last_name
+            }
+            user = TelegramService.register_user(
+                db=db,
+                username=username,
+                password=password,
+                role=role,
+                telegram_data=telegram_data,
+                manager_id=user_data.get('manager_id'),
+                invitation_id=user_data.get('invitation_id')
             )
-        else:
-            await message.answer(
-                f"🎉 Регистрация завершена!\n\n"
-                f"👤 Логин: {username}\n"
-                f"👑 Роль: Официант\n\n"
-                f"Теперь вы можете использовать веб-интерфейс для работы с меню.\n"
-                f"Перейдите по ссылке: http://...",
-                reply_markup=get_waiter_menu_keyboard()
-            )
-        await state.clear()
-    except Exception as e:
-        logger.error(f"Ошибка при создании пользователя: {e}")
-        await message.answer("❌ Произошла ошибка при регистрации. Попробуйте еще раз.")
-    finally:
-        db.close() 
+            logger.info(f"Пользователь создан с ID: {user.id}")
+            if role == "manager":
+                await message.answer(
+                    f"🎉 Регистрация менеджера завершена!\n\n"
+                    f"👤 Логин: {username}\n"
+                    f"👑 Роль: Менеджер\n\n"
+                    f"Теперь вы можете создавать приглашения для официантов.\n"
+                    f"Используйте кнопку '📋 Ссылка для регистрации'",
+                    reply_markup=get_manager_menu_keyboard()
+                )
+            else:
+                await message.answer(
+                    f"🎉 Регистрация завершена!\n\n"
+                    f"👤 Логин: {username}\n"
+                    f"👑 Роль: Официант\n\n"
+                    f"Теперь вы можете использовать веб-интерфейс для работы с меню.\n"
+                    f"Перейдите по ссылке: http://...",
+                    reply_markup=get_waiter_menu_keyboard()
+                )
+            await state.clear()
+        except Exception as e:
+            await handle_database_error(message, e, "регистрации") 

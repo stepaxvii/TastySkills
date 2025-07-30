@@ -1,9 +1,8 @@
 from sqlalchemy.orm import Session
-from sqlalchemy import and_
 from app.domain.entities.models import User, Restaurant, Section, Category, Product, TelegramSession
 from app.domain.entities.schemas import UserCreate, RestaurantCreate, SectionCreate, CategoryCreate, ProductCreate, TelegramUserCreate, TelegramSessionCreate
 from app.presentation.api.auth import get_password_hash, verify_password
-from typing import Optional, List, Dict, Any, Union
+from typing import Optional, List, Dict, Any
 import json
 
 def get_user(db: Session, user_id: int) -> Optional[User]:

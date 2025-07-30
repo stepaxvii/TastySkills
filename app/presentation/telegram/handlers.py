@@ -4,8 +4,6 @@ from aiogram import Router, F, Bot
 from aiogram.types import Message, CallbackQuery
 from aiogram.filters import Command
 from aiogram.fsm.context import FSMContext
-from sqlalchemy.orm import Session
-from typing import Any
 
 from app.domain.entities.telegram_states import RegistrationStates
 from app.application.services.telegram_service import TelegramService
