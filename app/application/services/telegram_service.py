@@ -1,8 +1,9 @@
 import re
 import secrets
 from datetime import datetime, timezone
-from typing import Optional, Tuple
+from typing import Optional, Tuple, Dict, Any
 from sqlalchemy.orm import Session
+from sqlalchemy import func
 
 from app.domain.entities.models import User, Invitation
 from app.domain.entities.schemas import UserCreate
@@ -53,6 +54,25 @@ class TelegramService:
         return waiter_link
     
     @staticmethod
+    def create_admin_manager_invitation_link(db: Session, admin: User, bot_username: str) -> str:
+        """Создание одноразовой ссылки приглашения для менеджера от админа"""
+        # Генерируем одноразовую ссылку для менеджера
+        invitation_code = f"admin_manager_{secrets.token_urlsafe(12).upper()}"
+        manager_link = f"https://t.me/{bot_username}?start=invite_{invitation_code}"
+        
+        # Создаем запись приглашения
+        invitation = Invitation(
+            code=invitation_code,
+            manager_id=admin.id,  # Админ как создатель приглашения
+            is_used=False,
+            created_at=datetime.now(timezone.utc)
+        )
+        db.add(invitation)
+        db.commit()
+        
+        return manager_link
+    
+    @staticmethod
     def process_invitation_code(db: Session, invitation_code: str) -> Optional[dict]:
         """Обработка кода приглашения"""
         # Проверяем, является ли это постоянной ссылкой менеджера
@@ -73,6 +93,20 @@ class TelegramService:
                     }
             except (ValueError, IndexError):
                 pass
+        
+        # Проверяем, является ли это приглашением менеджера от админа
+        if invitation_code.startswith("admin_manager_"):
+            invitation = db.query(Invitation).filter(
+                Invitation.code == invitation_code,
+                Invitation.is_used == False
+            ).first()
+            
+            if invitation:
+                return {
+                    "type": "admin_manager_invitation",
+                    "invitation_id": invitation.id,
+                    "admin_id": invitation.manager_id
+                }
         
         # Старая система приглашений (для обратной совместимости)
         invitation = db.query(Invitation).filter(
@@ -130,6 +164,14 @@ class TelegramService:
                     invitation.telegram_id = telegram_data.get('id')  # type: ignore
                     invitation.used_at = datetime.now(timezone.utc)  # type: ignore
         
+        # Если это менеджер по приглашению админа
+        if role == "manager" and invitation_id:
+            invitation = db.query(Invitation).filter(Invitation.id == invitation_id).first()
+            if invitation:
+                invitation.is_used = True  # type: ignore
+                invitation.telegram_id = telegram_data.get('id')  # type: ignore
+                invitation.used_at = datetime.now(timezone.utc)  # type: ignore
+        
         db.commit()
         db.refresh(user)
         
@@ -155,4 +197,80 @@ class TelegramService:
     @staticmethod
     def get_manager_waiters(db: Session, manager_id: int) -> list[User]:
         """Получение списка официантов менеджера"""
-        return db.query(User).filter(User.manager_id == manager_id).all() 
+        return db.query(User).filter(User.manager_id == manager_id).all()
+    
+    @staticmethod
+    def get_admin_statistics(db: Session) -> Dict[str, Any]:
+        """Получение статистики для администратора"""
+        # Подсчет менеджеров
+        managers_count = db.query(User).filter(User.role == "manager").count()
+        
+        # Подсчет официантов
+        waiters_count = db.query(User).filter(User.role == "waiter").count()
+        
+        # Подсчет официантов по менеджерам
+        waiters_by_manager = db.query(
+            User.manager_id,
+            func.count(User.id).label('waiters_count')
+        ).filter(
+            User.role == "waiter",
+            User.manager_id.isnot(None)
+        ).group_by(User.manager_id).all()
+        
+        # Детальная информация о менеджерах и их официантах
+        managers_info = []
+        for manager in db.query(User).filter(User.role == "manager").all():
+            waiters = db.query(User).filter(
+                User.manager_id == manager.id,
+                User.role == "waiter"
+            ).all()
+            
+            managers_info.append({
+                "username": manager.username,
+                "telegram_name": manager.telegram_first_name or "Не указано",
+                "waiters_count": len(waiters),
+                "created_at": manager.created_at.strftime('%d.%m.%Y') if manager.created_at else "Не указано"
+            })
+        
+        return {
+            "managers_count": managers_count,
+            "waiters_count": waiters_count,
+            "waiters_by_manager": waiters_by_manager,
+            "managers_info": managers_info
+        }
+    
+    @staticmethod
+    def get_manager_statistics(db: Session, manager_id: int) -> Dict[str, Any]:
+        """Получение статистики официантов для менеджера"""
+        # Получаем всех официантов менеджера
+        waiters = db.query(User).filter(
+            User.manager_id == manager_id,
+            User.role == "waiter"
+        ).all()
+        
+        # Подсчет активных официантов
+        active_waiters = [w for w in waiters if w.is_active]
+        
+        # Группировка по дате регистрации
+        waiters_by_date = {}
+        for waiter in waiters:
+            date_str = waiter.created_at.strftime('%d.%m.%Y') if waiter.created_at else "Не указано"
+            if date_str not in waiters_by_date:
+                waiters_by_date[date_str] = 0
+            waiters_by_date[date_str] += 1
+        
+        return {
+            "total_waiters": len(waiters),
+            "active_waiters": len(active_waiters),
+            "inactive_waiters": len(waiters) - len(active_waiters),
+            "waiters_by_date": waiters_by_date,
+            "waiters_list": [
+                {
+                    "username": waiter.username,
+                    "telegram_name": waiter.telegram_first_name or "Не указано",
+                    "is_active": waiter.is_active,
+                    "created_at": waiter.created_at.strftime('%d.%m.%Y') if waiter.created_at else "Не указано"
+                }
+                for waiter in waiters
+            ]
+        } 

@@ -94,6 +94,49 @@ async def show_waiters(message: Message) -> None:
     finally:
         db.close()
 
+@manager_router.message(F.text == "📊 Статистика официантов")
+async def show_manager_statistics(message: Message) -> None:
+    """Показ статистики официантов для менеджера"""
+    assert message.from_user is not None
+    user_id = message.from_user.id
+    db = SessionLocal()
+    try:
+        user = get_user_by_telegram_id(db, user_id)
+        if not user or user.role != "manager":  # type: ignore
+            await message.answer("❌ Только менеджеры могут просматривать статистику официантов.")
+            return
+        
+        manager_id = int(getattr(user, 'id', 0))
+        stats = TelegramService.get_manager_statistics(db, manager_id)
+        
+        # Формируем текст статистики
+        stats_text = f"📊 Статистика официантов\n\n"
+        stats_text += f"👤 Всего официантов: {stats['total_waiters']}\n"
+        stats_text += f"✅ Активных: {stats['active_waiters']}\n"
+        stats_text += f"❌ Неактивных: {stats['inactive_waiters']}\n\n"
+        
+        if stats['waiters_by_date']:
+            stats_text += "📅 Регистрации по датам:\n"
+            for date, count in sorted(stats['waiters_by_date'].items()):
+                stats_text += f"   {date}: {count} чел.\n"
+            stats_text += "\n"
+        
+        if stats['waiters_list']:
+            stats_text += "📋 Список официантов:\n\n"
+            for i, waiter in enumerate(stats['waiters_list'], 1):
+                status = "✅" if waiter['is_active'] else "❌"
+                stats_text += f"{i}. {waiter['username']} {status}\n"
+                stats_text += f"   Имя: {waiter['telegram_name']}\n"
+                stats_text += f"   Регистрация: {waiter['created_at']}\n\n"
+        else:
+            stats_text += "📋 Официанты пока не зарегистрированы."
+        
+        await message.answer(stats_text)
+    except Exception as e:
+        await message.answer("❌ Произошла ошибка при получении статистики.")
+    finally:
+        db.close()
+
 @manager_router.message(F.text == "🍽️ Работа с меню")
 async def open_menu(message: Message) -> None:
     await message.answer("Откройте меню по ссылке: http://localhost:8000/")
