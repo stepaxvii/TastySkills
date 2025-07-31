@@ -6,7 +6,8 @@ from aiogram.filters import Command
 from aiogram.fsm.context import FSMContext
 from app.domain.entities.telegram_states import RegistrationStates
 from app.application.services.telegram_service import TelegramService
-from app.presentation.telegram.keyboards import get_manager_menu_keyboard, get_admin_menu_keyboard, get_waiter_menu_keyboard
+from app.presentation.telegram.keyboards.menu import get_manager_menu_keyboard, get_admin_menu_keyboard, get_waiter_menu_keyboard
+from app.presentation.telegram.keyboards.locale import ButtonTexts
 from app.infrastructure.repositories.crud import get_user_by_telegram_id, get_user_by_username, create_user
 from app.domain.entities.schemas import UserCreate
 from app.presentation.telegram.utils import get_db_session, send_welcome_message, handle_database_error
@@ -213,7 +214,7 @@ async def complete_registration(message: Message, state: FSMContext, role: str =
                     f"👤 Логин: {username}\n"
                     f"👑 Роль: Менеджер\n\n"
                     f"Теперь вы можете создавать приглашения для официантов.\n"
-                    f"Используйте кнопку '📋 Ссылка для регистрации'",
+                    f"Используйте кнопку '{ButtonTexts.INVITATION_LINK}'",
                     reply_markup=get_manager_menu_keyboard()
                 )
             else:
@@ -227,4 +228,4 @@ async def complete_registration(message: Message, state: FSMContext, role: str =
                 )
             await state.clear()
         except Exception as e:
-            await handle_database_error(message, e, "регистрации") 
+            await handle_database_error(message, e, "регистрации")

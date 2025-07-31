@@ -7,7 +7,10 @@ from aiogram.fsm.context import FSMContext
 
 from app.domain.entities.telegram_states import RegistrationStates
 from app.application.services.telegram_service import TelegramService
-from app.presentation.telegram.keyboards import get_registration_choice_keyboard, get_manager_menu_keyboard
+from app.presentation.telegram.keyboards.registration import get_registration_choice_keyboard
+from app.presentation.telegram.keyboards.menu import get_manager_menu_keyboard
+from app.presentation.telegram.keyboards.callback_data.registration import CDRegisterManager, CDRegisterInvitation, CDCopyInviteCode
+from app.presentation.telegram.keyboards.locale import ButtonTexts
 from app.infrastructure.database.database import SessionLocal
 from app.infrastructure.repositories.crud import get_user_by_telegram_id, get_user_by_username, create_user
 from app.domain.entities.schemas import UserCreate
@@ -135,12 +138,12 @@ async def cmd_start(message: Message, state: FSMContext) -> None:
     finally:
         db.close()
 
-@router.callback_query(lambda c: c.data in ["register_manager", "register_invitation"])
+@router.callback_query(CDRegisterManager.filter() | CDRegisterInvitation.filter())
 async def process_registration_choice(callback_query: CallbackQuery, state: FSMContext) -> None:
     """Обработка выбора типа регистрации"""
     await callback_query.answer()
     
-    if callback_query.data == "register_manager":
+    if isinstance(callback_query.data, CDRegisterManager):
         await state.update_data(registration_type="manager")
         await state.set_state(RegistrationStates.waiting_for_username)
         if callback_query.message:
@@ -280,7 +283,7 @@ async def complete_registration(message: Message, state: FSMContext, role: str =
                 f"👤 Логин: {username}\n"
                 f"👑 Роль: Менеджер\n\n"
                 f"Теперь вы можете создавать приглашения для официантов.\n"
-                f"Используйте кнопку '📋 Ссылка для регистрации'",
+                f"Используйте кнопку '{ButtonTexts.INVITATION_LINK}'",
                 reply_markup=get_manager_menu_keyboard()
             )
         else:
@@ -302,7 +305,7 @@ async def complete_registration(message: Message, state: FSMContext, role: str =
         db.close()
 
 # Обработчики меню менеджера
-@router.message(F.text == "📋 Создать приглашение")
+@router.message(F.text == ButtonTexts.CREATE_INVITATION)
 async def create_invitation(message: Message, bot: Bot) -> None:
     """Создание приглашения для официанта"""
     assert message.from_user is not None
@@ -341,7 +344,7 @@ async def create_invitation(message: Message, bot: Bot) -> None:
     finally:
         db.close()
 
-@router.message(F.text == "👥 Мои официанты")
+@router.message(F.text == ButtonTexts.MY_WAITERS)
 async def show_waiters(message: Message) -> None:
     """Показать список официантов менеджера"""
     assert message.from_user is not None
@@ -375,7 +378,7 @@ async def show_waiters(message: Message) -> None:
     finally:
         db.close()
 
-@router.message(F.text == "🍽️ Приступить к созданию ресторана и наполнению меню")
+@router.message(F.text == ButtonTexts.CREATE_RESTAURANT)
 async def start_create_restaurant(message: Message) -> None:
     db = SessionLocal()
     try:
@@ -484,6 +487,11 @@ async def process_new_password(message: Message, state: FSMContext) -> None:
         await state.clear()
     finally:
         db.close()
+
+@router.callback_query(CDCopyInviteCode.filter())
+async def copy_invite_code(callback_query: CallbackQuery) -> None:
+    """Обработка копирования кода приглашения"""
+    await callback_query.answer("📋 Код приглашения скопирован в буфер обмена!")
 
 @router.message()
 async def echo_message(message: Message) -> None:

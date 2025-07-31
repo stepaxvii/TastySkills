@@ -9,7 +9,8 @@ from sqlalchemy.orm import Session
 
 from app.infrastructure.database.database import SessionLocal
 from app.infrastructure.repositories.crud import get_user_by_telegram_id, get_user_by_username
-from app.presentation.telegram.keyboards import get_admin_menu_keyboard, get_manager_menu_keyboard, get_waiter_menu_keyboard
+from app.presentation.telegram.keyboards.menu import get_admin_menu_keyboard, get_manager_menu_keyboard, get_waiter_menu_keyboard
+from app.presentation.telegram.keyboards.common import create_copy_code_keyboard
 import os
 from dotenv import load_dotenv
 
@@ -85,16 +86,7 @@ async def send_welcome_message(message: Message, user, role: str) -> None:
     )
 
 
-def create_copy_code_keyboard(invite_code: str, callback_prefix: str = "copy_invite_code") -> Optional[InlineKeyboardMarkup]:
-    """Создание клавиатуры для копирования кода приглашения"""
-    if not invite_code:
-        return None
-    
-    return InlineKeyboardMarkup(
-        inline_keyboard=[
-            [InlineKeyboardButton(text="Скопировать код", callback_data=f"{callback_prefix}:{invite_code}")]
-        ]
-    )
+
 
 
 def extract_invite_code_from_link(link: str) -> Optional[str]:

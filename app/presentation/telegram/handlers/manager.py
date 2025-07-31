@@ -4,13 +4,16 @@ from app.application.services.telegram_service import TelegramService
 from aiogram.types import CallbackQuery
 from app.presentation.telegram.utils import (
     get_db_session, get_user_safely, is_manager_user,
-    create_copy_code_keyboard, extract_invite_code_from_link,
+    extract_invite_code_from_link,
     get_role_permission_message, handle_database_error
 )
+from app.presentation.telegram.keyboards.common import create_copy_code_keyboard
+from app.presentation.telegram.keyboards.callback_data.registration import CDCopyInviteCode
+from app.presentation.telegram.keyboards.locale import ButtonTexts
 
 manager_router = Router()
 
-@manager_router.message(F.text == "📋 Ссылка для регистрации")
+@manager_router.message(F.text == ButtonTexts.INVITATION_LINK)
 async def create_invitation(message: Message, bot: Bot) -> None:
     assert message.from_user is not None
     user_id = message.from_user.id
@@ -27,7 +30,7 @@ async def create_invitation(message: Message, bot: Bot) -> None:
             
             # Извлекаем код приглашения и создаем клавиатуру
             invite_code = extract_invite_code_from_link(waiter_link)
-            copy_code_kb = create_copy_code_keyboard(invite_code, "copy_invite_code")
+            copy_code_kb = create_copy_code_keyboard(invite_code)
             
             await message.answer(
                 f"📋 Регистрация в TastySkills:\n\n"
@@ -42,19 +45,20 @@ async def create_invitation(message: Message, bot: Bot) -> None:
             await handle_database_error(message, e, "создании пригласительной ссылки")
 
 # Обработчик для инлайн-кнопки 'Скопировать код'
-@manager_router.callback_query(F.data.startswith("copy_invite_code:"))
+@manager_router.callback_query(CDCopyInviteCode.filter())
 async def copy_invite_code_callback(callback: CallbackQuery):
-    if not callback.data:
-        await callback.answer("Нет кода для копирования.", show_alert=True)
-        return
-    code = callback.data.split(":", 1)[-1]
     if not callback.message:
         await callback.answer("Нет сообщения для отправки кода.", show_alert=True)
         return
+    
+    # Получаем код из callback данных
+    callback_data = CDCopyInviteCode.unpack(callback.data)
+    code = callback_data.invite_code
+    
     await callback.answer("Код скопирован!", show_alert=False)
     await callback.message.answer(f"Код для регистрации: {code}")
 
-@manager_router.message(F.text == "👥 Мои официанты")
+@manager_router.message(F.text == ButtonTexts.MY_WAITERS)
 async def show_waiters(message: Message) -> None:
     assert message.from_user is not None
     user_id = message.from_user.id
@@ -81,7 +85,7 @@ async def show_waiters(message: Message) -> None:
         except Exception as e:
             await handle_database_error(message, e, "получении списка официантов")
 
-@manager_router.message(F.text == "📊 Статистика официантов")
+@manager_router.message(F.text == ButtonTexts.WAITER_STATISTICS)
 async def show_manager_statistics(message: Message) -> None:
     """Показ статистики официантов для менеджера"""
     assert message.from_user is not None
@@ -123,11 +127,11 @@ async def show_manager_statistics(message: Message) -> None:
         except Exception as e:
             await handle_database_error(message, e, "получении статистики")
 
-@manager_router.message(F.text == "🍽️ Работа с меню")
+@manager_router.message(F.text == ButtonTexts.WORK_WITH_MENU)
 async def open_menu(message: Message) -> None:
     await message.answer("Откройте меню по ссылке: http://localhost:8000/")
 
-@manager_router.message(F.text == "🍽️ Приступить к созданию ресторана и наполнению меню")
+@manager_router.message(F.text == ButtonTexts.CREATE_RESTAURANT)
 async def start_create_restaurant(message: Message) -> None:
     async with get_db_session() as db:
         try:

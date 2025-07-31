@@ -4,10 +4,11 @@ from app.presentation.telegram.utils import (
     get_db_session, get_user_safely, is_waiter_user,
     get_role_permission_message, handle_database_error
 )
+from app.presentation.telegram.keyboards.locale import ButtonTexts
 
 waiter_router = Router()
 
-@waiter_router.message(F.text == "🍽️ Работа с меню")
+@waiter_router.message(F.text == ButtonTexts.WAITER_MENU)
 async def open_menu(message: Message) -> None:
     """Открытие меню для официанта"""
     assert message.from_user is not None

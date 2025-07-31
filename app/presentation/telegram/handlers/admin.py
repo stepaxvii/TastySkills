@@ -4,15 +4,18 @@ from app.application.services.telegram_service import TelegramService
 from aiogram.types import CallbackQuery
 from app.presentation.telegram.utils import (
     get_db_session, get_user_safely, is_admin_user, 
-    create_copy_code_keyboard, extract_invite_code_from_link,
+    extract_invite_code_from_link,
     get_role_permission_message, handle_database_error
 )
+from app.presentation.telegram.keyboards.common import create_copy_code_keyboard
+from app.presentation.telegram.keyboards.callback_data.registration import CDCopyManagerCode
+from app.presentation.telegram.keyboards.locale import ButtonTexts
 import logging
 
 logger = logging.getLogger(__name__)
 admin_router = Router()
 
-@admin_router.message(F.text == "👑 Пригласить менеджера")
+@admin_router.message(F.text == ButtonTexts.INVITE_MANAGER)
 async def create_manager_invitation(message: Message, bot: Bot) -> None:
     """Создание приглашения для менеджера от админа"""
     assert message.from_user is not None
@@ -33,7 +36,7 @@ async def create_manager_invitation(message: Message, bot: Bot) -> None:
             
             # Извлекаем код приглашения и создаем клавиатуру
             invite_code = extract_invite_code_from_link(manager_link)
-            copy_code_kb = create_copy_code_keyboard(invite_code, "copy_manager_code")
+            copy_code_kb = create_copy_code_keyboard(invite_code, "manager")
             
             await message.answer(
                 f"👑 Приглашение менеджера в TastySkills:\n\n"
@@ -48,20 +51,21 @@ async def create_manager_invitation(message: Message, bot: Bot) -> None:
         except Exception as e:
             await handle_database_error(message, e, "создании приглашения менеджера")
 
-@admin_router.callback_query(F.data.startswith("copy_manager_code:"))
+@admin_router.callback_query(CDCopyManagerCode.filter())
 async def copy_manager_code_callback(callback: CallbackQuery):
     """Обработчик для копирования кода приглашения менеджера"""
-    if not callback.data:
-        await callback.answer("Нет кода для копирования.", show_alert=True)
-        return
-    code = callback.data.split(":", 1)[-1]
     if not callback.message:
         await callback.answer("Нет сообщения для отправки кода.", show_alert=True)
         return
+    
+    # Получаем код из callback данных
+    callback_data = CDCopyManagerCode.unpack(callback.data)
+    code = callback_data.invite_code
+    
     await callback.answer("Код скопирован!", show_alert=False)
     await callback.message.answer(f"Код для регистрации менеджера: {code}")
 
-@admin_router.message(F.text == "📊 Статистика")
+@admin_router.message(F.text == ButtonTexts.STATISTICS)
 async def show_admin_statistics(message: Message) -> None:
     """Показ статистики для администратора"""
     assert message.from_user is not None
